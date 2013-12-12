@@ -67,6 +67,8 @@ class HttpRouter(Resource):
                 
     def render_GET(self, request):
         logging.debug("[START --- HttpRouter.render_GET]")
+        request.setHeader('content-type', 'application/javascript; charset=UTF-8')
+        request.setHeader('Access-Control-Allow-Origin', '*')
         
         apiStr = "/neuviz/1.0/data/"
         uri = request.uri
@@ -107,7 +109,7 @@ class HttpRouter(Resource):
        
 
 if __name__ == '__main__':
-    docRoot = './data/'
+    docRoot = '../public/data/'
     site = Site(HttpRouter(docRoot))	
     reactor.listenTCP(8000, site)
     print 'Server is responding at http://localhost:8000'
