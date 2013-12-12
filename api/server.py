@@ -112,5 +112,5 @@ if __name__ == '__main__':
     docRoot = '../public/data/'
     site = Site(HttpRouter(docRoot))	
     reactor.listenTCP(8000, site)
-    print 'Server is responding at http://localhost:8000'
+    print 'Server is responding at http://localhost:8000/'
     reactor.run()
