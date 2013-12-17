@@ -31,18 +31,32 @@ from twisted.protocols.basic import FileSender
 
 from twisted.python.log import err
 
-from twisted.web.resource import Resource
+from twisted.web.resource import Resource, NoResource
 from twisted.web.server import Site, NOT_DONE_YET
+from twisted.web.static import File
+
 
 
 class HttpRouter(Resource):
-    ''' HttpRouter to manage NeuViz API requests '''
+    ''' HttpRouter to manage NeuViz API requests ''' 
+    
+    isLeaf = False;
 
-    def __init__(self, docRoot):
-        self.docRoot = docRoot
+    def getChild(self, name, request):
+        if name == 'neuviz':
+            return FileLoader(dataRoot)
+
+        else: 
+            return NoResource()
+
+
+class FileLoader(Resource):
+    '''FileLoader to load data from json files'''          
     
     isLeaf = True;
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+    def __init__(self, dataRoot):
+        self.dataRoot = dataRoot
 
     def isNumber(self, s):
         try:
@@ -60,37 +74,39 @@ class HttpRouter(Resource):
         return 0
 
     def cbFinished(self, ignored, fp, request):
-        logging.debug("[START --- HttpRouter.cbFinished]")
+        logging.debug("[START --- FileLoader.cbFinished]")
         fp.close()
         request.finish()
-        logging.debug("[END --- HttpRouter.cbFinished]")            
-                
+        logging.debug("[END --- FileLoader.cbFinished]")
+
     def render_GET(self, request):
-        logging.debug("[START --- HttpRouter.render_GET]")
-        request.setHeader('content-type', 'application/javascript; charset=UTF-8')
-        request.setHeader('Access-Control-Allow-Origin', '*')
-        
+        logging.debug("[START --- FileLoader.render_GET]")
         apiStr = "/neuviz/1.0/data/"
         uri = request.uri
 
         if apiStr in uri:    
-            children = uri.split('/');
-            initStr = children[1]
-            year = children[4]
-            month = children[5]
-            endStr = children[6]
+            request.setHeader('Content-Type', 'application/json')
+            request.setHeader('Access-Control-Allow-Origin', '*')  
+            
+            try:
+                children = uri.split('/');
+                initStr = children[1]
+                year = children[4]
+                month = children[5]
+                endStr = children[6]
+            except Exception, e:
+                return '{"success": "false", "response": "The request is not properly formatted"}'
 
             if initStr != "neuviz":
-                return '{"success": "false", "response": "invalid request"}'
+                return '{"success": "false", "response": "Invalid request"}'
             if not (self.isNumber(year) and 2012 <= float(year) <= 2013):
-                return '{"success": "false", "response": "invalid request"}'
+                return '{"success": "false", "response": "Invalid request"}'
             if not(self.isNumber(month) and 1 <= float(month) <= 12):
-                return '{"success": "false", "response": "invalid request"}'
+                return '{"success": "false", "response": "Invalid request"}'
             if endStr != "":
-                return '{"success": "false", "response": "invalid request"}'        
+                return '{"success": "false", "response": "Invalid request"}'        
 
-            request.setHeader('Content-Type', 'application/json')
-            fileName = self.docRoot+"result_"+month+"_"+year+".json"
+            fileName = self.dataRoot+"result_"+month+"_"+year+".json"
             
             if not (self.fileCheck(fileName)):
                 return '{"success": "false", "response": "No data available for this period"}'
@@ -102,15 +118,15 @@ class HttpRouter(Resource):
             d.addCallback(self.cbFinished, fp, request)
             d.addErrback(err, "Streaming data to client failed")
             
-            logging.debug("[END --- HttpRouter.render_GET]")
+            logging.debug("[END --- FileLoader.render_GET]")
             return NOT_DONE_YET    
         else: 
-            return '{"success": "false", "response": "invalid request"}'
-       
+            return '{"success": "false", "response": "The request is not properly formatted"}'
 
 if __name__ == '__main__':
-    docRoot = '../public/data/'
-    site = Site(HttpRouter(docRoot))	
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    dataRoot = '../public/data/'
+    site = Site(HttpRouter())	
     reactor.listenTCP(8000, site)
     print 'Server is responding at http://localhost:8000/'
     reactor.run()
