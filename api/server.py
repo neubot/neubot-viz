@@ -36,7 +36,6 @@ from twisted.web.server import Site, NOT_DONE_YET
 from twisted.web.static import File
 
 
-
 class HttpRouter(Resource):
     ''' HttpRouter to manage NeuViz API requests ''' 
     
@@ -99,9 +98,9 @@ class FileLoader(Resource):
 
             if initStr != "neuviz":
                 return '{"success": "false", "response": "Invalid request"}'
-            if not (self.isNumber(year) and 2012 <= float(year) <= 2013):
+            if not (self.isNumber(year) and 2012 <= float(year) <= 2013 and len(year) == 4):
                 return '{"success": "false", "response": "Invalid request"}'
-            if not(self.isNumber(month) and 1 <= float(month) <= 12):
+            if not(self.isNumber(month) and 1 <= float(month) <= 12 and len(month) == 2):
                 return '{"success": "false", "response": "Invalid request"}'
             if endStr != "":
                 return '{"success": "false", "response": "Invalid request"}'        
