@@ -7,12 +7,12 @@ How it works
 ------------
 
 This project is based in two phases: an Elaboration phase and a Visualization phase.
-The tool used for the Elaboration phase are stored in the `source` folder and the web interface, for the Visualization phase, is stored in the `public` folder.
+The tool used for the Elaboration phase are stored in the `backend` folder and the web interface, for the Visualization phase, is stored in the `public` folder.
 
 Elaboration phase
 -----------------
 
-In the source folder you can find the Python scripts of the Elaboration phase. We started from the Neubot data [CSV files](http://data.neubot.org/2013/06/20/bigdive/) and we imported using the map.py script into a MongoDB database.
+In the backend folder you can find the Python scripts of the Elaboration phase. We started from the Neubot data [CSV files](http://data.neubot.org/2013/06/20/bigdive/) and we imported using the map.py script into a MongoDB database.
 After this import step we executed the reduce.py script to elaborate the aggregate the data by country, city, and provider for each month. We elaborated the median of these values and we exported it into a JSON structure, in order to be read from the Visualization client.
 
 Visualization phase
