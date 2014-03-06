@@ -71,34 +71,6 @@ var start = function (route, serve, reqtype) {
         res.end();
     }
 
-
-
-
-    /*
-    
-    var onRequest = function(req, res) {
-
-        var pathResource = route(req.url);
-
-        if (pathResource === "BAD REQUEST") {
-        	badRequest(res, "Path is not secure");
-        	return;
-        }
-        
-        var resource = serve(pathResource);
-
-        if (resource === "UNABLE TO READ THE FILE") {
-            notFound(res, "Reading file was unsuccessful");
-        	return;    
-        }
-
-        var contentType = reqtype(pathResource);
-
-        res.writeHead(200, {'Content-Type': contentType});
-        res.write(resource);
-        res.end();
-    };*/
-
     var webServer = http.createServer(onRequest);
     webServer.on('listening', function () {
         console.info('Web Server running at port %d', WEB_SERVER_PORT);
@@ -109,7 +81,6 @@ var start = function (route, serve, reqtype) {
     });
 
     webServer.listen(WEB_SERVER_PORT);
-
 
 };
 
