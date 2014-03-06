@@ -3,7 +3,7 @@
 <head>
   <script src="libs/d3.v3.min.js" type="text/javascript"></script>
   <script src="libs/topojson.js"></script>
-  <script src="http://d3js.org/queue.v1.min.js"></script>
+  <script src="libs/queue.v1.min.js"></script>
   
   <style>
   @font-face {
@@ -88,8 +88,8 @@
       <option value="upload_difference">Upload Difference</option>
       <option value="download_difference">Download Difference</option>
       <option value="conn_time_difference">Connect Time Difference</option>
-      <option value="num_client">Num di Neubot</option>
-      <option value="num_sample">Num di Test</option>
+      <option value="num_client">Neubot Instances</option>
+      <option value="num_sample">Number of Tests</option>
     </select>
     <select id="month" style="left:500px;">
       <option value="01" selected = "selected">January</option>
@@ -148,9 +148,11 @@
     /*** Different colors for different measurements ***/
 
     var colors = new Object()
-    colors["upload"] = "green"
-    colors["download"] = "red"
-    colors["conn_time"] = "blue"
+    colors["upload"] = "blue"
+    colors["download"] = "orange"
+    colors["conn_time"] = "purple"
+    colors["num_client"] = "black"
+    colors["num_sample"] = "black"
     colors["upload_difference"] = "green"
     colors["download_difference"] = "green"
     colors["conn_time_difference"] = "green"
@@ -301,9 +303,9 @@
       
     //Load data 
     queue()
-        .defer(d3.json, "data/world-110m.json")
-        .defer(d3.tsv, "data/world-country-names.tsv")
-        .defer(d3.json, "data/result_01_2013.json")
+        .defer(d3.json, "geo-data/world-110m.json")
+        .defer(d3.tsv, "geo-data/world-country-names.tsv")
+        .defer(d3.json, "http://localhost:8000/neuviz/1.0/data/2013/1")
         //.defer(d3.json, "data/neutrality_country_012013.json")
         .await(ready);
 
@@ -311,8 +313,6 @@
       var measure = d3.select("#measure")[0][0].selectedOptions[0].value
 
       if(measure == "upload_difference"){
-        console.log(parseInt(parameter1["upload"]))
-        console.log(parseInt(parameter2["upload"]))
         
         var k = 8*(parameter1["upload"] - parameter2["upload"])/(1000)
         console.log(k)
@@ -377,10 +377,6 @@
           if(measures["features"][d.name] != undefined && measures_data["features"][this.id]["0"] != undefined){
             return colors.upload;
           }
-          else if(measures["features"][d.name] != undefined && measures_data["features"][this.id]["0"] == undefined){
-            var white = "white"
-            return white;
-          }
           else{
             var white = "#FFFFFF"
             return white
@@ -430,7 +426,6 @@
           if(measures_data["features"][this.id]!=undefined && measures_data["features"][this.id][time.split("_")[1]] != undefined){
             createCountryDonut(measures_data["features"][this.id], this.id); 
           }
-            
         }
     }
 
@@ -1023,7 +1018,7 @@
                 max_value = speedtest - bittorrent
               if(speedtest - bittorrent < min_value)
                 min_value = speedtest - bittorrent
-              //end of check max and min value in countries
+              //end of check max and min value in towns
             }
           }
         }
