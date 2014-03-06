@@ -21,16 +21,16 @@
 *
 **/
 
-var fs = require('fs');
-var http = require('http');
-var path = require('path');
+//var fs = require('fs');
+//var http = require('http');
+//var path = require('path');
 
-var API = "/neuviz/1.0/data/";
-var ROOT = "/var/www/";
-var RE_PATH = /^[a-z0-9/-]+$/;
-var WEB_API_PORT = 8000;
-var years = {};
-var months = {};
+//var API = "/neuviz/1.0/data/";
+//var ROOT = "/var/www/";
+//var RE_PATH = /^[a-z0-9/-]+$/;
+//var WEB_API_PORT = 8000;
+//var years = {};
+//var months = {};
 
 /*String.prototype.startsWith = function (prefix) {
     if(this.indexOf(prefix) === 0) {
@@ -59,7 +59,6 @@ var notFound = function (res, log_message) {
 	errorResponse(res, 404, 'File not found', log_message);
 };
 
-*/
 
 var fillYears = function () {
     years["2012"] = true;
@@ -92,9 +91,6 @@ var webAPIResponse = function (req, res) {
             badRequest(res, "Invalid request");
             return;
         }
-            
-        /* TODO: improve the output of the python data processor
-           to obtain a cleaner file name and a cleaner code */
         
         var file = "result_";
         var time = parameters[1].split("/");
@@ -145,7 +141,7 @@ webAPI.on('error', function (err) {
     console.error('Error occurred with the Web API Server:', err.message);
 });
 
-webAPI.listen(WEB_API_PORT);
+webAPI.listen(WEB_API_PORT); */
 
 var webServer = require('./server.js');
 var router = require('./router.js');

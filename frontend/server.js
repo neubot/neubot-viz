@@ -44,7 +44,32 @@ var notFound = function (res, log_message) {
 	errorResponse(res, 404, 'File not found', log_message);
 };
 
-var start = function(route, serve, reqtype) {
+var start = function (route, serve, reqtype) {
+
+    var onRequest = function (req, res) {
+        if(req.url == "/favicon.ico")
+            return;
+
+        var pathResource = route(req.url);
+
+        console.info(req.url);
+
+        if (pathResource === "Bad Request") {
+            badRequest(res, "Bad Request");
+            return;
+        }
+
+        var resource = serve(pathResource);
+
+        if (resource === "UNABLE TO READ THE FILE") {
+            notFound(res, "Resource not found");
+            return;    
+        }
+        var contentType = reqtype(pathResource);
+        res.writeHead(200, {'Content-Type': contentType});
+        res.write(resource);
+        res.end();
+    }
 
 
 
@@ -72,7 +97,7 @@ var start = function(route, serve, reqtype) {
         res.writeHead(200, {'Content-Type': contentType});
         res.write(resource);
         res.end();
-    };
+    };*/
 
     var webServer = http.createServer(onRequest);
     webServer.on('listening', function () {
@@ -84,9 +109,6 @@ var start = function(route, serve, reqtype) {
     });
 
     webServer.listen(WEB_SERVER_PORT);
-
-
-*/
 
 
 };

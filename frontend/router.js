@@ -30,6 +30,7 @@ var years = {};
 var months = {};
 
 String.prototype.startsWith = function (prefix) {
+
     if (this.indexOf(prefix) === 0) {
         return true;
     }
@@ -57,7 +58,7 @@ var checkParameters = function (parameters) {
     return true;
 };
 
-var formatJSON function (parameters) {
+var formatJSON = function (parameters) {
 	
 	/* TODO: improve the output of the python data processor
     to obtain a cleaner file name and a cleaner code */
@@ -73,35 +74,44 @@ var formatJSON function (parameters) {
 }
 
 var route = function (pathName) {
+	console.info("Route to the requested resource");
 	var resource;
 
-	if (pathName.startsWith(API) {
-        var mapped = path.join(ROOT, mapped);
+	if (pathName.startsWith(API)) {
+		console.info("Try to use the API");
+        var mapped = path.join(ROOT, pathName);
         var pathController = path.join(ROOT, API);
 
         if (mapped.startsWith(pathController)) {
+            
         	var parameters = mapped.split(pathController);
+            console.info("Check parameters: " + parameters);
+
         	if (!checkParameters(parameters[1])) {
-        		// TODO: API documentation
+                console.info("Bad parameters");
                 resource = "Bad request"; 
             }
-            else resource = formatJSON(parameters);
-        } 
-
-        else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {    
-             pathName = "/index.html";
-	         resource = path.join(ROOT, pathName);
+            else resource = ROOT + API + formatJSON(parameters);
         }
 
-        else {
-    	    var staticResource = path.join(ROOT,pathName);
-         	if (staticResource.indexOf(ROOT, 0) !== 0) {
-                resource = "Bad request";
-            } 
-            else resource = staticResource;
-        }
+        else resource = "Bad request" 
+    } 
+    else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {
+        console.info("Resource: index.html");
+        pathName = "/index.html";
+	    resource = path.join(ROOT, pathName);
     }
 
+    else {
+        var staticResource = path.join(ROOT,pathName);
+        console.info("Resource: " + staticResource);
+        if (staticResource.indexOf(ROOT, 0) !== 0) {
+            resource = "Bad request";
+        } 
+        else resource = staticResource;
+    }
+     
+    console.info(resource); 
     return resource;
 }    
 
