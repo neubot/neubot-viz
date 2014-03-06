@@ -1,8 +1,9 @@
 /** neuviz/frontend/secure_path.js
 *
 * Copyright (c) 2014
-*    Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
-*    and Giuseppe Futia <giuseppe.futia@polito.it>.
+*    Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
+*    Giuseppe Futia <giuseppe.futia@polito.it>,
+*    Simone Basso <simone.basso@polito.it>.
 *
 * This file is part of NeuViz.
 *
