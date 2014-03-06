@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="libs/d3.v3.min.js" type="text/javascript"></script>
+  <script src="libs/topojson.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+  
+  <style>
+  @font-face {
+    font-family: BebasNeue;
+    src: url('BebasNeue.otf');
+  }
+
+  svg{
+    background-color: #EDEAD7;
+    font-family: "BebasNeue","Helvetica Neue", Helvetica, sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-family: "BebasNeue","Helvetica Neue", Helvetica, sans-serif;
+    font-size: 16px;
+  }
+
+  .axis:hover{
+    cursor: pointer;
+  }
+
+  body {
+    background-color: #EDEAD7;
+    font-family: "BebasNeue","Helvetica Neue", Helvetica, sans-serif;
+  }
+
+  select {
+    position: absolute;
+    top: 75px;
+    width: 200px; 
+    font-family: "BebasNeue","Helvetica Neue", Helvetica, sans-serif;
+    font-size: 16px;
+  }
+
+  #map {
+      width:1000px;
+      height:600px;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+  }
+
+  #content {
+      position: absolute;
+      top: 0px;
+      left: 1100px;
+  }
+
+  #controller {
+    position: absolute;
+    top: 570px;
+    left: 30px;
+    /*Useful link for styling selected box: http://cssdeck.com/labs/styling-select-box-with-css3*/
+  }
+  
+  </style>
+</head>
+<body>
+  
+  <div id="map"></div>
+  
+  <div id="content"></div>
+
+   <div id="controller">
+    
+    <select id="test">
+      <option value="speedtest">Speed Test</option>
+      <option value="bittorrent">Bit Torrent</option>
+    </select>
+
+    <select id="measure" style="left:250px;">
+      <option value="upload">Upload</option>
+      <option value="download">Download</option>
+      <option value="conn_time">Connection Time</option>
+      <option value="upload_difference">Upload Difference</option>
+      <option value="download_difference">Download Difference</option>
+      <option value="conn_time_difference">Connect Time Difference</option>
+      <option value="num_client">Num di Neubot</option>
+      <option value="num_sample">Num di Test</option>
+    </select>
+    <select id="month" style="left:500px;">
+      <option value="01" selected = "selected">January</option>
+      <option value="02">February</option>
+      <option value="03">March</option>
+      <option value="04">April</option>
+      <option value="05">May</option>
+      <option value="06">June</option>
+      <option value="07">July</option>
+      <option value="08">August</option>
+      <option value="09">September</option>
+      <option value="10">October</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
+    </select>
+
+    <select id="year" style="left:750px;">
+      <option value="2012">2012</options>
+      <option value="2013" selected = "selected">2013</options>  
+    </select>  
+
+   </div>
+
+  
+  
+<script type="text/javascript">
+    
+    
+    var w = 1000
+    var h = 600
+    var active
+    var zoomed = false
+    var zoomed_country
+    var scale
+
+    var measures_data
+    var group_pie
+    var city_pie
+
+    var global_difference;
+
+    var test_measure_range = new Object()
+
+    var svg_content = d3.select('#content').append('svg')
+      .attr('width', w)
+      .attr('height', 1000 )
+
+    var svg_controller = d3.select('#controller').append('svg')
+      .attr('width', w)
+      .attr('height', 100)  
+
+    var svg = d3.select("#map").append('svg')
+          .attr('width', w)
+          .attr('height', h)
+
+    /*** Different colors for different measurements ***/
+
+    var colors = new Object()
+    colors["upload"] = "green"
+    colors["download"] = "red"
+    colors["conn_time"] = "blue"
+    colors["upload_difference"] = "green"
+    colors["download_difference"] = "green"
+    colors["conn_time_difference"] = "green"
+
+    /***************************************************/       
+
+    
+    /*** Set viz labels ***/  
+
+    var num_value = svg_content.append("text")
+      .attr("y", 700)
+      .attr("x", 200)
+      .style("font-size", 40)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")  
+
+
+    var text_title = svg_content.append("text")
+      .attr("y", 50)
+      .attr("x", 200)
+      .style("font-size",30)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+    
+    var text_country_provider = svg_content.append("text")
+      .attr("y", 275)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var text_country_istances = svg_content.append("text")
+      .attr("y", 300)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var text_country_value = svg_content.append("text")
+      .attr("y", 325)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var text_town = svg_content.append("text")
+      .attr("y", 370)
+      .attr("x", 200)
+      .style("font-size",30)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+    
+    var text_town_provider = svg_content.append("text")
+      .attr("y", 600)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var text_town_istances = svg_content.append("text")
+      .attr("y", 625)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var text_town_nn = svg_content.append("text")
+      .attr("y", 650)
+      .attr("x", 200)
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+    var measurement_value = svg_content.append("text")   
+      .style("font-size", 20)
+      .style("fill","grey")
+      .attr("text-anchor", "middle")
+
+
+    /********************/
+
+
+    var proj = d3.geo.mercator()
+          .scale( (w + 1) / 2 / Math.PI )
+          .translate( [w / 2 , h / 2])
+          //.rotate([0, 0, 50])
+
+    // create the path generator
+    // using the projection system
+    var path = d3.geo.path()
+          .projection(proj)     
+
+
+    //Set bounding box
+    svg.append("rect")
+        .attr("width", w)
+        .attr("height", h)
+        .style("fill", "#EDEAD7")
+        .on("click", reset);
+      var g = svg.append("g")
+          .attr("transform","translate(0, 50)");  
+    
+
+    //Time slider
+    var xScale = d3.scale.linear()
+      .domain([0, 23])
+      .range([0, 950])
+
+    var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .tickValues([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23])
+                  .orient("bottom");
+
+    svg_controller.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(10, 20)")
+      .call(xAxis)
+
+    var time_circle =  svg_controller
+                        .select(".axis")
+                        .select("g")
+                        .append("circle")
+                        .attr("id", "time_circle")
+                        .attr("class", "hour_0")
+                        .style("fill", "red")
+                        .attr("cy",-10)
+                        .attr("r", 5)   
+
+    svg_controller.select(".axis").selectAll("g")
+    .attr("class", function(d,i){
+        var classTime = "hour_"+d
+        return classTime;
+      })
+      .on("click", function(d,i){
+        var time = "hour_"+d
+        svg_controller.select(".axis").selectAll("g").select("circle").remove()
+        svg_controller
+          .select(".axis")
+          .select("."+time)
+          .append("circle")
+          .attr("id", "time_circle")
+          .attr("class",time)
+          .style("fill", "red")
+          .attr("cy",-10)
+          .attr("r", 5)
+        changeView()
+      })
+      
+    //Load data 
+    queue()
+        .defer(d3.json, "data/world-110m.json")
+        .defer(d3.tsv, "data/world-country-names.tsv")
+        .defer(d3.json, "data/result_01_2013.json")
+        //.defer(d3.json, "data/neutrality_country_012013.json")
+        .await(ready);
+
+    function calculateMedianDifference(parameter1, parameter2){
+      var measure = d3.select("#measure")[0][0].selectedOptions[0].value
+
+      if(measure == "upload_difference"){
+        console.log(parseInt(parameter1["upload"]))
+        console.log(parseInt(parameter2["upload"]))
+        
+        var k = 8*(parameter1["upload"] - parameter2["upload"])/(1000)
+        console.log(k)
+        return [(k>64 || k<-64) ? k:0, k]
+      
+      }
+
+      else if(measure == "download_difference"){
+        var k = 8*(parameter1["download"] - parameter2["download"])/(1000*1000)
+        console.log("down "+k)
+        return [(k>1 || k<-1) ? k:0, k]
+      
+      }
+
+      else if(measure == "conn_time_difference"){
+        
+        var k = (parameter2["conn_time"] - parameter1["conn_time"])*1000
+        console.log("a "+k)
+        return [(k>5 || k<-5) ? k:0, k]
+      }
+    }    
+
+    
+    /*** READY FUNCTION ***/    
+    
+    function ready(error, world, names, measures){
+      measures_data = measures;
+      console.log("Min value")
+      console.log(measures.min)
+
+      defineRangeValues(measures.min, measures.max)
+      
+      /*** Set the change view listeners ***/
+
+      d3.select("#test").on("change", changeView)
+      d3.select("#measure").on("change", changeView)
+      d3.select("#month").on("change", loadNewJSON)
+      d3.select("#year").on("change", loadNewJSON)
+
+      /************************************/
+      
+      /*** Draw countries with default filters ***/
+      
+      var countries = topojson.object(world, world.objects.countries).geometries
+      neighbors = topojson.neighbors(world, countries),
+      i = -1,
+      n = countries.length;
+      countries.forEach(function(d) {
+        d.name = names.filter(function(n) { return d.id == n.id; })[0].name; 
+      });
+
+      var country = g.selectAll(".country").data(countries)
+
+      country
+        .enter()
+        .insert("path")
+        .attr("class", "country")    
+        .attr("id", function(d,i) { 
+          return d.name; })
+        .attr("d", path)
+        .style("fill", function(d,i){
+          if(measures["features"][d.name] != undefined && measures_data["features"][this.id]["0"] != undefined){
+            return colors.upload;
+          }
+          else if(measures["features"][d.name] != undefined && measures_data["features"][this.id]["0"] == undefined){
+            var white = "white"
+            return white;
+          }
+          else{
+            var white = "#FFFFFF"
+            return white
+          }  
+        })
+        .style('opacity', function(d,i){
+          if(measures["features"][d.name] != undefined && measures_data["features"][this.id]["0"] != undefined){
+            var scale = test_measure_range["speedtest"]["upload"]
+            return scale(measures["features"][d.name]["0"]["speedtest"]["upload"])
+          }
+        })
+        .style('stroke', 'grey')
+        .on("mousemove", mouseMoveCountry)
+        .on("mouseout", mouseOutCountry)
+        .on("click", click)
+    }
+
+    /*** END OF READY FUNCTION ***/
+
+     /*** CHANGE VIEW FUNCTION ***/
+
+    function changeView(){
+      var test = d3.select("#test")[0][0].selectedOptions[0].value
+      var measure = d3.select("#measure")[0][0].selectedOptions[0].value
+      var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+      var selected_filter = this
+
+      updateMapView(test, measure, time)
+      
+      if(zoomed){
+        updateDonutCountry()
+        updateTownView(selected_filter)
+      }
+    }
+    /*** END OF CHANGE VIEW FUNCTION ***/
+
+
+    /*** FUNCTIONS FOR UPDATE COUNTRY DONUT  ***/
+
+    function mouseMoveCountry(){
+      var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+      num_value.text(difference_map[this.id])
+
+      //var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+        if(!zoomed){
+          text_title.text(this.id)
+          if(measures_data["features"][this.id]!=undefined && measures_data["features"][this.id][time.split("_")[1]] != undefined){
+            createCountryDonut(measures_data["features"][this.id], this.id); 
+          }
+            
+        }
+    }
+
+    function updateDonutCountry(){
+       var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+       if(measures_data["features"][zoomed_country]!=undefined && measures_data["features"][zoomed_country][time.split("_")[1]] != undefined){
+        svg_content.selectAll(".arc").data([]).exit().remove()
+        createCountryDonut(measures_data["features"][zoomed_country], zoomed_country);
+       }
+       else{
+        svg_content.selectAll(".arc").data([]).exit().remove()
+       }
+       //remove towns
+       text_town.text("")
+       svg_content.selectAll(".arc2").data([]).exit().remove()
+    }
+
+    /*** END OF FUNCTIONS FOR UPADATE COUNTRY DONUT ***/
+
+
+    /*** MOUSE OUT COUNTRY FUNCTION ***/
+
+    function mouseOutCountry(){
+      if(!zoomed){
+        text_title.text("")
+        svg_content.selectAll(".arc").data([]).exit().remove()
+      }   
+    }
+
+    /*** END OF MOUSE OUT COUNTRY FUNCTION ***/
+    var difference_map = {}
+
+    /*** UPDATE VIEW MAP FUNCTION **/
+
+    function updateMapView(test, measure, time){
+      difference_map = {}
+
+      var country = d3.select("#map").selectAll(".country")
+        if(!zoomed){
+          country
+            .transition()
+            .duration(750)
+            .style("fill", function(d,i){
+              if(measures_data["features"][d.name] != undefined && measures_data["features"][d.name][time.split("_")[1]]){
+                if(measure=="num_client" || measure =="num_sample"){
+                  difference_map[d.name] =  measures_data["features"][d.name][time.split("_")[1]][measure]
+                }
+                else if(measure!="upload" && measure!="download" && measure!= "conn_time"){
+                  console.log(d.name)
+                  var parameter1 = measures_data["features"][d.name][time.split("_")[1]]["speedtest"]
+                  var parameter2 = measures_data["features"][d.name][time.split("_")[1]]["bittorrent"]
+                  var difference = calculateMedianDifference(parameter1,parameter2)
+                  difference_map[d.name] = difference[1]
+                  if(difference[0]>0)
+                    return colors[measure]
+                  else if (difference[0]<0)
+                    return "red"
+                  else return "yellow"
+
+                }
+
+                else{
+                  var temp = measures_data["features"][d.name][time.split("_")[1]][test][measure]
+                  if(measure == "upload")
+                    temp = (temp*8)/1000
+                  else if (measure == "download")
+                    temp = (temp*8)/(1000*1000)
+                  else if(measure == "conn_time")
+                    temp*=1000
+                  difference_map[d.name] = temp
+                }
+              } 
+              else if(measures_data["features"][d.name] != undefined && measures_data["features"][d.name]["0"] == undefined){
+                var white = "white"
+                return white;
+              }
+              else{
+                var white = "#FFFFFF"
+                return white
+              }  
+            })    
+          .style("opacity", function(d,i){            
+            if(measures_data["features"][d.name] != undefined && measures_data["features"][d.name][time.split("_")[1]] != undefined){
+              if(measure=="num_client" || measure =="num_sample"){
+               console.log(d.name)
+                
+                var scale
+                if(measure == "num_client")
+                  scale = d3.scale.linear().domain([0, 200]).range([0.1, 1])
+                else
+                  scale = d3.scale.linear().domain([0, 4000]).range([0.1, 1])
+                //console.log("opacity_value: "+scale(measures_data["features"][d.name][time.split("_")[1]][measure]))
+                
+
+                return scale(measures_data["features"][d.name][time.split("_")[1]][measure]);
+
+              } 
+              else if(measure!="upload" && measure!="download" && measure!= "conn_time"){
+                var parameter1 = measures_data["features"][d.name][time.split("_")[1]]["speedtest"]
+                var parameter2 = measures_data["features"][d.name][time.split("_")[1]]["bittorrent"]
+                console.log(d.name)
+                var difference = calculateMedianDifference(parameter1,parameter2)[0]
+                console.log(difference)
+                var scale = test_measure_range[measure]
+                
+                //console.log(scale(difference))
+                return scale(difference);
+              }
+              else{
+                var scale = test_measure_range[test][measure]
+                
+                //console.log(scale(measures_data["features"][d.name][time.split("_")[1]][test][measure]))
+                return scale(measures_data["features"][d.name][time.split("_")[1]][test][measure])
+              }
+            }  
+          })
+        }
+        else{
+          svg.selectAll('g').selectAll(".country").style("opacity",0.2)
+           country
+            .transition()
+            .duration(750)
+            .style("fill", function(d,i){
+              if(measures_data["features"][d.name] != undefined && measures_data["features"][d.name][time.split("_")[1]]){
+                return colors[measure]
+              }
+            else{
+                var white = "#FFFFFF"
+                return white
+            }  
+          })
+        } //End of else
+    }    
+
+    /*** END UPDATE VIEW MAP FUNCTION ***/    
+
+
+    /*** FUNCTION FOR LOADING NEW FILE THROUGH REST API ***/
+
+    function loadNewJSON(){
+      var month = d3.select("#month")[0][0].selectedOptions[0].value
+      var year = d3.select("#year")[0][0].selectedOptions[0].value
+      var file_name = "/data/result_"+month+"_"+year+".json"
+
+      d3.json(file_name, function(error, new_data){
+       if (error){
+        alert("No data for this month or year")
+        return console.warn(error)
+       } 
+        measures_data = new_data
+        changeView()
+      })
+    }
+
+    /*** END OF FUNCTION FOR LOADING NEW FILE ***/
+
+    
+    /*** CLICK FUNCTION ***/
+
+    function click(d) {
+
+      //CHECK IF YOU ARE EXPLORING CLOSER COUNTRIES 
+      zoomed_country = d.name;
+      svg.selectAll('g').selectAll(".country").style("opacity",0.2)
+      zoomed = true;
+      if (active === d) return reset();
+      g.selectAll(".active").classed("active", false);
+      d3.select(this).classed("active", active = d);
+
+      var b = path.bounds(d);
+      g.transition().duration(750).attr("transform",
+        "translate(" + proj.translate() + ")"
+        + "scale(" + .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h) + ")"
+        + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+
+      createNewTowns()
+
+    }
+
+    /*** END OF FUNCTION CLICK ***/
+
+
+    /*** CREATE AND UPDATE TOWN VIEW FUNCTIONS **/
+
+    function createNewTowns(){
+      var test = d3.select("#test")[0][0].selectedOptions[0].value
+      var measure = d3.select("#measure")[0][0].selectedOptions[0].value
+      var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+      
+      if(measures_data["features"][zoomed_country]!=undefined){
+        var arrayTowns = new Array();
+        for(var i in measures_data["features"][zoomed_country]["cities"]){
+          if(measures_data["features"][zoomed_country]["cities"][i][time.split("_")[1]] != undefined)
+            arrayTowns.push(i);
+        }
+        if (arrayTowns.length == 0) {
+          alert ("No measurements at "+time)
+        }
+
+        for(var j = 0; j<arrayTowns.length; j++) {
+          g.append("circle")
+          .attr("r", function(){
+
+            if(measures_data["features"][zoomed_country]["cities"][arrayTowns[j]][time.split("_")[1]].num_client>3){
+              var data_to_return = 3
+              return data_to_return;
+            } 
+            else{
+              return measures_data["features"][zoomed_country]["cities"][arrayTowns[j]][time.split("_")[1]].num_client 
+            }
+          })
+          .attr("id", function(){
+            return arrayTowns[j]
+          })
+          .attr("class", "city_circle")
+          .style("stroke","purple")
+          .style("stroke-width", 0.4)
+          .style("fill", function(){
+            return "purple"
+          })
+          .attr("transform", function() {return "translate(" + proj([measures_data["features"][zoomed_country]["cities"][arrayTowns[j]].lon, measures_data["features"][zoomed_country]["cities"][arrayTowns[j]].lat]) + ")"})
+          .on("click", function(){
+            text_town.text("")
+            svg_content.selectAll(".arc2").data([]).exit().remove()
+            var town = this.id
+            text_town
+              .text(this.id)   
+              createTownDonut(measures_data["features"][zoomed_country]["cities"][this.id], this.id);    
+          })
+          .style("opacity", 0)
+          .transition()
+          .duration(750)
+          .style("opacity", function(){
+            if(measure=="num_client" || measure =="num_sample"){ 
+              /*var scale
+                if(measure == "num_client")
+                  scale = d3.scale.linear().domain([0, 200]).range([0.1, 1])
+                else
+                  scale = d3.scale.linear().domain([0, 4000]).range([0.1, 1])
+               return scale*/
+               return 0.8 
+            }
+            else if(measure!="upload" && measure!="download" && measure!= "conn_time"){
+              var parameter1 = measures_data["features"][zoomed_country]["cities"][arrayTowns[j]][time.split("_")[1]]["speedtest"]
+              var parameter2 = measures_data["features"][zoomed_country]["cities"][arrayTowns[j]][time.split("_")[1]]["bittorrent"]
+              var difference = calculateMedianDifference(parameter1,parameter2)[0]
+              var scale = test_measure_range[measure]
+              return scale(difference);
+            } 
+            else{
+              var scale = test_measure_range[test][measure]
+              return scale(measures_data["features"][zoomed_country]["cities"][arrayTowns[j]][time.split("_")[1]][test][measure])            }  
+          })
+          
+
+
+          /*.on("mousemove", function(){
+
+            
+          })
+          .on("click", function(){
+            text_town.text("")
+            svg_content.selectAll("#city_pie").data([]).exit().remove()
+            var town = this.id
+            text_town
+              .text(this.id)   
+                //createTownDonut(measures_data["features"][d.name]["cities"][this.id]);    
+          }) */
+        }       
+      }  
+    }
+
+    function updateTownView(selected_filter){
+      svg_content.selectAll(".arc2").data([]).exit().remove()
+      text_town.text("")
+      var town = d3.select("#map").selectAll(".city_circle")
+      town
+      .transition()
+      .duration(750)
+      .style("opacity", 0)
+      setTimeout(function(){
+        svg.selectAll("g").selectAll(".city_circle").data([]).exit().remove()
+        createNewTowns()
+      }, 750)
+    }
+
+    /*** END OF CREATE AND UPDATE TOWN VIEW FUNCTION **/
+
+
+    function reset() {
+      zoomed = false;
+      svg.selectAll('g').selectAll(".country").style("opacity",1)
+        g.selectAll(".active").classed("active", active = false);
+        g.transition().duration(750).attr("transform", "");
+        svg.selectAll("g").selectAll(".city_circle").data([]).exit().remove()
+        svg_content.selectAll(".arc2").data([]).exit().remove()
+        text_town.text("")
+    } 
+
+    function createCountryDonut(providers_data, name_country){
+      
+      var difference
+      var dt = providers_data["providers"];
+      var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+      var test = d3.select("#test")[0][0].selectedOptions[0].value
+      var measure = d3.select("#measure")[0][0].selectedOptions[0].value
+     
+      var arrayForCountryProviders = d3.keys(dt).map(function(d){ //Because sometimes you have no data
+        if (dt[d][time.split("_")[1]] != undefined) {
+          return{ 'key': d, 'number': dt[d][time.split("_")[1]].num_client, 'value': dt[d][time.split("_")[1]][test][measure]}
+        } 
+        else{
+          return{ 'key': d, 'number': dt[d].num_client, 'value': "No data"}
+        }
+      })
+
+      var arc = d3.svg.arc()
+          .outerRadius(90)
+          //.innerRadius(100 - 20);
+
+      var pie = d3.layout.pie()
+        .sort(null)
+        .value(function(d) {
+        return d.number; }
+        );
+        
+        //svg_content.append("g")
+
+        group_pie =  svg_content.selectAll(".arc")
+              .data(pie(arrayForCountryProviders))
+              .enter().append("g")  
+              .attr("transform", "translate(195, 155)")
+              .attr("id", function(d,i){
+                return d.data.key
+              })
+                .attr("class", "arc")
+                .on("mouseover", function(d) { 
+                  text_country_provider
+                    .text(d.data.key) 
+                    
+                  text_country_istances
+                    .text("Neubot instances: "+d.data.number)
+                   if(measure!="upload" && measure!="download" && measure!= "conn_time")
+                    text_country_value.text("Value: "+difference)
+                   else 
+                    text_country_value.text("Value: "+d.data["value"]) 
+                 
+                 })
+                 .on("mouseout", function() {
+                  text_country_provider.text("")
+                  text_country_istances.text("")
+                  text_country_value.text("")
+                 }) 
+
+                //attr("transform", "translate(100,100)");
+
+          group_pie.append("path")
+            .attr("d", arc)
+            .style("fill", function(d){
+              if(d.data.value=="No data"){
+                var color = "black"
+                return color
+              }
+              else return colors[measure]
+            })
+            .style("stroke", "#FFFFFF")
+            .style("stroke-width", 1)
+            .style("opacity", function(d,i){
+               if(measure=="num_client" || measure =="num_sample"){}
+               else if(measure!="upload" && measure!="download" && measure!= "conn_time"){
+                var parameter1 = measures_data["features"][name_country][time.split("_")[1]]["speedtest"]
+                var parameter2 = measures_data["features"][name_country][time.split("_")[1]]["bittorrent"]
+                difference = calculateMedianDifference(parameter1,parameter2)[0]
+                var scale = test_measure_range[measure]
+                return scale(difference);
+              }
+              else {
+                var scale = test_measure_range[test][measure]
+                return scale(d.data.value)
+              }
+            })
+            .transition()
+            .ease("bounce")
+            .duration(2000)
+            .attrTween("d", tweenPie)
+            .transition()
+            .ease("elastic")
+            .delay(function(d,i){return 2000 + i*50;})
+            .duration(750)
+            .attrTween("d", tweenDonut);
+
+          function tweenPie(b){
+            b.innerRadius = 0;
+            var i = d3.interpolate({startAngle:0, endAngle:0}, b);
+            return function(t){return arc(i(t));};
+          }
+
+          function tweenDonut(b){
+            b.innerRadius = 90 * .6;
+            var i = d3.interpolate({innerRadius:0},b);
+            return function(t){return arc(i(t));};
+          } 
+      }
+
+      function createTownDonut(providers_data, city_name){
+        var difference
+        var time = d3.select("#time_circle")[0][0]["attributes"]["class"].nodeValue
+        var test = d3.select("#test")[0][0].selectedOptions[0].value
+        var measure = d3.select("#measure")[0][0].selectedOptions[0].value
+        console.log("In create city donut")
+
+        var dt = providers_data["providers"]
+
+       var arrayTownProviders = d3.keys(dt).map(function(d){ //Because sometimes you have no data
+          if (dt[d][time.split("_")[1]] != undefined) {
+            return{ 'key': d, 'number': dt[d][time.split("_")[1]].num_client, 'value': dt[d][time.split("_")[1]][test][measure]}
+          }
+          else{
+            return{ 'key': d, 'number': dt[d].num_client, 'value': "No data"}
+          }
+      })
+
+      var arc2 = d3.svg.arc()
+          .outerRadius(90)
+          //.innerRadius(100 - 20);
+
+      var pie2 = d3.layout.pie()
+        .sort(null)
+        .value(function(d) {
+        return d.number; }
+        );
+        
+        //svg_content.append("g")
+
+        city_pie =  svg_content.selectAll(".arc2")
+              .data(pie2(arrayTownProviders))
+              .enter().append("g")
+              .attr("transform", "translate(195, 475)")
+              .attr("id", function(d,i){
+                return d.data.key
+              })
+              .attr("class", "arc2")
+                //attr("transform", "translate(100,100)");
+
+          city_pie.append("path")
+            .attr("d", arc2)
+            .style("fill", function(d){
+              if(d.data.value=="No data"){
+                var color = "black"
+                return color
+              }
+              else return colors[measure]
+            })
+            .style("stroke", "#FFFFFF")
+            .style("stroke-width", 1)
+            .style("opacity", function(d,i){
+              if(measure=="num_client" || measure =="num_sample"){ 
+              /*var scale
+                if(measure == "num_client")
+                  scale = d3.scale.linear().domain([0, 200]).range([0.1, 1])
+                else
+                  scale = d3.scale.linear().domain([0, 4000]).range([0.1, 1])
+               return scale*/
+               return 0.8 
+            }
+
+              if(measure!="upload" && measure!="download" && measure!= "conn_time"){
+              var parameter1 = measures_data["features"][zoomed_country]["cities"][city_name][time.split("_")[1]]["speedtest"]
+              var parameter2 = measures_data["features"][zoomed_country]["cities"][city_name][time.split("_")[1]]["bittorrent"]
+              difference = calculateMedianDifference(parameter1,parameter2)[0]
+              var scale = test_measure_range[measure]
+              return scale(difference);
+              }
+              else{
+                var scale = test_measure_range[test][measure]
+                return scale(d.data.value)  
+              }
+            })
+            .on("mouseover", function(d) { 
+                  text_town_provider
+                    .text(d.data.key) 
+                    
+                  text_town_istances   
+                    .text("Neubot instances: "+d.data.number)
+
+                  if(measure!="upload" && measure!="download" && measure!= "conn_time") 
+                    text_town_nn.text("Value: "+difference)
+                  else text_town_nn.text("Value: "+d.data.value) 
+                 
+                 })
+                 .on("mouseout", function() {
+                  text_town_provider.text("")
+                  text_town_istances.text("")
+                  text_town_nn.text("")
+                 }) 
+            .transition()
+            .ease("bounce")
+            .duration(2000)
+            .attrTween("d", tweenPie2)
+            .transition()
+            .ease("elastic")
+            .delay(function(d,i){return 2000 + i*50;})
+            .duration(750)
+            .attrTween("d", tweenDonut2); 
+
+          function tweenPie2(b){
+            b.innerRadius = 0;
+            var i = d3.interpolate({startAngle:0, endAngle:0}, b);
+            return function(t){return arc2(i(t));};
+          }
+
+          function tweenDonut2(b){
+            b.innerRadius = 90 * .6;
+            var i = d3.interpolate({innerRadius:0},b);
+            return function(t){return arc2(i(t));};
+
+          }
+      }
+
+
+    /*** DEFINE RANGE VALUES ***/
+
+    function defineRangeValues(min_values, max_values){
+      // Sicuramente da espandere
+
+      test_measure_range["speedtest"] = new Object()
+      
+      test_measure_range["speedtest"]["upload"] = d3.scale.log().domain([min_values["speedtest"]["upload"], max_values["speedtest"]["upload"]]).range([0.1, 1])
+      
+      test_measure_range["speedtest"]["download"] = d3.scale.log().domain([min_values["speedtest"]["download"], max_values["speedtest"]["download"]]).range([0.1, 1])
+      
+      test_measure_range["speedtest"]["conn_time"] = d3.scale.log().domain([min_values["speedtest"]["conn_time"], max_values["speedtest"]["conn_time"]]).range([0.1, 1])
+
+      test_measure_range["bittorrent"] = new Object()
+      
+      test_measure_range["bittorrent"]["upload"] = d3.scale.log().domain([min_values["bittorrent"]["upload"], max_values["bittorrent"]["upload"]]).range([0.1, 1])
+      
+      test_measure_range["bittorrent"]["download"] = d3.scale.log().domain([min_values["bittorrent"]["download"], max_values["bittorrent"]["download"]]).range([0.1, 1])
+
+      test_measure_range["bittorrent"]["conn_time"] = d3.scale.log().domain([min_values["bittorrent"]["conn_time"], max_values["bittorrent"]["conn_time"]]).range([0.1, 1])
+
+      test_measure_range["upload_difference"] = d3.scale.log().domain([speedtestBittorentDifference("upload").min_value, speedtestBittorentDifference("upload").max_value]).range([0.4, 1])
+
+      test_measure_range["download_difference"] = d3.scale.log().domain([speedtestBittorentDifference("download").min_value, speedtestBittorentDifference("download").max_value]).range([0.4, 1])
+
+      test_measure_range["conn_time_difference"] = d3.scale.log().domain([speedtestBittorentDifference("conn_time").min_value, speedtestBittorentDifference("conn_time").max_value]).range([0.4, 1])
+    }
+
+    /*** END OF DEFINE RANGE VALUES ***/
+
+
+    /*** CALCULATE MAX MIN DIFFERENCE FUNCTION ***/
+
+    function speedtestBittorentDifference(measure){
+      var range = new Object();
+      var max_value = -1
+      var min_value = 9999999999
+
+      var countries = new Array();
+      var cities = new Array();
+
+      for(var country in measures_data["features"]){
+        countries.push(measures_data["features"][country])
+        for(var hour in measures_data["features"][country]){
+          if(measures_data["features"][country][hour]["speedtest"] != undefined){
+            //check max and min value in countries
+            var speedtest = measures_data["features"][country][hour]["speedtest"][measure]
+            var bittorrent = measures_data["features"][country][hour]["bittorrent"][measure]
+            if(speedtest - bittorrent > max_value)  
+              max_value = speedtest - bittorrent
+            if(speedtest - bittorrent < min_value)
+              min_value = speedtest - bittorrent
+            //end of check max and min value in countries   
+          }
+        }
+      }
+
+      //console.log(max_value)
+      //console.log(min_value)
+
+      for (var i = 0; i<countries.length; i++){
+        for (var city in countries[i]["cities"]){
+          cities.push(countries[i]["cities"][city])
+          for(var hour in countries[i]["cities"][city]){
+             if(countries[i]["cities"][city][hour]["speedtest"] != undefined){
+               //check max value in towns
+              var speedtest = countries[i]["cities"][city][hour]["speedtest"][measure]
+              var bittorrent = countries[i]["cities"][city][hour]["bittorrent"][measure]
+              if(speedtest - bittorrent > max_value)  
+                max_value = speedtest - bittorrent
+              if(speedtest - bittorrent < min_value)
+                min_value = speedtest - bittorrent
+              //end of check max and min value in countries
+            }
+          }
+        }
+      }
+
+      //console.log(max_value)
+      //console.log(min_value)
+
+      for (var i = 0; i<cities.length; i++){
+        for (var provider in cities[i]){
+          if(cities[i][provider]["speedtest"] != undefined){
+            var speedtest = cities[i][provider]["speedtest"][measure]
+            var bittorrent = cities[i][provider]["bittorrent"][measure]
+            if(speedtest - bittorrent > max_value)  
+                max_value = speedtest - bittorrent
+              if(speedtest - bittorrent < min_value)
+                min_value = speedtest - bittorrent
+          }
+        }  
+      }  
+
+      //console.log(cities)
+
+      //console.log(max_value)
+      //console.log(min_value)
+
+      range.min_value = min_value
+      range.max_value = max_value
+      return range
+    }
+
+    /*** END OF CALCULATE MAX MIN DIFFERENCE FUNCTION ***/
+
+</script>
+
+</body>
+</html>
