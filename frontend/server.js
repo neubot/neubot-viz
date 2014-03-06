@@ -45,6 +45,11 @@ var notFound = function (res, log_message) {
 };
 
 var start = function(route, serve, reqtype) {
+
+
+
+
+    /*
     
     var onRequest = function(req, res) {
 
@@ -59,7 +64,7 @@ var start = function(route, serve, reqtype) {
 
         if (resource === "UNABLE TO READ THE FILE") {
             notFound(res, "Reading file was unsuccessful");
-        	return;
+        	return;    
         }
 
         var contentType = reqtype(pathResource);
@@ -79,6 +84,11 @@ var start = function(route, serve, reqtype) {
     });
 
     webServer.listen(WEB_SERVER_PORT);
+
+
+*/
+
+
 };
 
 exports.start = start;

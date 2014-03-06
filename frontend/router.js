@@ -23,27 +23,86 @@
 
 
 var path = require("path");
-var securePath = require("./secure_path.js")
-
 var ROOT = "/var/www/";
+var API = "/neuviz/1.0/data/";
+
+var years = {};
+var months = {};
+
+String.prototype.startsWith = function (prefix) {
+    if (this.indexOf(prefix) === 0) {
+        return true;
+    }
+    return false;
+};
+
+var fillYears = function () {
+    years["2012"] = true;
+    years["2013"] = true;
+};
+
+var fillMonths = function () {
+    for (var i = 1; i <= 12; i++) {
+       months[i] = true;
+    }
+};
+
+var checkParameters = function (parameters) {
+	fillYears();
+	fillMonths();
+    var parameter = parameters.split("/");
+    if (parameter.length>2) return false;
+    if (years[parameter[0]] === undefined) return false;
+    if (months[parameter[1]] === undefined) return false;
+    return true;
+};
+
+var formatJSON function (parameters) {
+	
+	/* TODO: improve the output of the python data processor
+    to obtain a cleaner file name and a cleaner code */
+    
+    var file = "result_";
+    var time = parameters[1].split("/");
+    if (time[1].length == 1)
+        file += "0" + time[1];  
+    else file += time[1];
+        file += "_" + time[0] + ".json";
+    return file;
+
+}
 
 var route = function (pathName) {
 	var resource;
-	
-	if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {
-        pathName = "/index.html"; // Sets it to the index page
-        resource = path.join(ROOT,pathName);
-	    return resource;
+
+	if (pathName.startsWith(API) {
+        var mapped = path.join(ROOT, mapped);
+        var pathController = path.join(ROOT, API);
+
+        if (mapped.startsWith(pathController)) {
+        	var parameters = mapped.split(pathController);
+        	if (!checkParameters(parameters[1])) {
+        		// TODO: API documentation
+                resource = "Bad request"; 
+            }
+            else resource = formatJSON(parameters);
+        } 
+
+        else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {    
+             pathName = "/index.html";
+	         resource = path.join(ROOT, pathName);
+        }
+
+        else {
+    	    var staticResource = path.join(ROOT,pathName);
+         	if (staticResource.indexOf(ROOT, 0) !== 0) {
+                resource = "Bad request";
+            } 
+            else resource = staticResource;
+        }
     }
 
-	if(securePath.sanitizePath(ROOT,pathName) != 0) {
-        resource = "BAD REQUEST";
-        return resource;
-	}
-
-	resource = path.join(ROOT,pathName);
-	return resource;
-
-}
+    return resource;
+}    
 
 exports.route = route;

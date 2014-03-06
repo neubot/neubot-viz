@@ -32,12 +32,14 @@ var WEB_API_PORT = 8000;
 var years = {};
 var months = {};
 
-String.prototype.startsWith = function (prefix) {
+/*String.prototype.startsWith = function (prefix) {
     if(this.indexOf(prefix) === 0) {
         return true;
     }
     return false;
-};
+};*/
+
+/*
 
 var errorResponse = function (res, code, reason, log_message) {
     console.error('%s', log_message);
@@ -56,6 +58,8 @@ var internalError = function (res, log_message) {
 var notFound = function (res, log_message) {
 	errorResponse(res, 404, 'File not found', log_message);
 };
+
+*/
 
 var fillYears = function () {
     years["2012"] = true;
