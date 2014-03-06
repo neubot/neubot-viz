@@ -75,7 +75,7 @@ var formatJSON = function (parameters) {
 
 var route = function (pathName) {
 	console.info("Route to the requested resource");
-	var resource;
+	var resource = undefined;
 
 	if (pathName.startsWith(API)) {
 		console.info("Try to use the API");
@@ -87,14 +87,10 @@ var route = function (pathName) {
         	var parameters = mapped.split(pathController);
             console.info("Check parameters: " + parameters);
 
-        	if (!checkParameters(parameters[1])) {
-                console.info("Bad parameters");
-                resource = "Bad request"; 
+        	if (checkParameters(parameters[1])) {
+               resource = ROOT + API + formatJSON(parameters);
             }
-            else resource = ROOT + API + formatJSON(parameters);
         }
-
-        else resource = "Bad request" 
     } 
     else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {
         console.info("Resource: index.html");
@@ -105,10 +101,9 @@ var route = function (pathName) {
     else {
         var staticResource = path.join(ROOT,pathName);
         console.info("Resource: " + staticResource);
-        if (staticResource.indexOf(ROOT, 0) !== 0) {
-            resource = "Bad request";
-        } 
-        else resource = staticResource;
+        if (staticResource.indexOf(ROOT, 0) === 0) {
+            resource = staticResource;
+        }
     }
      
     console.info(resource); 

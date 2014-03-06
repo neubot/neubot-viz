@@ -54,7 +54,7 @@ var start = function (route, serve, reqtype) {
 
         console.info(req.url);
 
-        if (pathResource === "Bad Request") {
+        if (pathResource === undefined) {
             badRequest(res, "Bad Request");
             return;
         }
