@@ -1,4 +1,4 @@
-/** neuviz/fsreader.js
+/** neuviz/frontend/fs_reader.js
 *
 * Copyright (c) 2014
 *    Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
@@ -27,31 +27,28 @@ var fs = require("fs");
 var serve = function (pathName) {
 
     var resource = "";
-
     try {
         resource = fs.readFileSync(pathName);
     } catch (err) {
         resource = "UNABLE TO READ FILE";
     }
-
     return resource;
 };
 
 var reqtype = function(pathName) {
-
     var extension = path.extname(pathName);
+    
     if (extension === "")
-    	extension = "plain";
-   
+        extension = "plain";
+
     var contentType = {};
     contentType[".json"] = "application/json"
     contentType[".html"] = "text/html"
     contentType[".js"] = "application/javascript"
     contentType["plain"] = "text/plain"
-
+    
     return contentType[extension];
 };
 
 exports.serve = serve;
 exports.reqtype = reqtype;
-

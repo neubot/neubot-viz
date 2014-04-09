@@ -51,8 +51,9 @@ var start = function (route, serve, reqtype) {
             return;
 
         var pathResource = route(req.url);
+        
+        console.info("Path resource: "+pathResource)
 
-        console.info(req.url);
 
         if (pathResource === undefined) {
             badRequest(res, "Bad Request");
@@ -61,10 +62,11 @@ var start = function (route, serve, reqtype) {
 
         var resource = serve(pathResource);
 
-        if (resource === "UNABLE TO READ THE FILE") {
+        if (resource === "UNABLE TO READ FILE") {
             notFound(res, "Resource not found");
             return;    
         }
+    
         var contentType = reqtype(pathResource);
         res.writeHead(200, {'Content-Type': contentType});
         res.write(resource);

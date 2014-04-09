@@ -59,8 +59,8 @@ var checkParameters = function (parameters) {
 };
 
 var formatJSON = function (parameters) {
-	
-	/* TODO: improve the output of the python data processor
+
+    /* TODO: improve the output of the python data processor
     to obtain a cleaner file name and a cleaner code */
     
     var file = "result_";
@@ -74,18 +74,15 @@ var formatJSON = function (parameters) {
 }
 
 var route = function (pathName) {
-	console.info("Route to the requested resource");
 	var resource = undefined;
 
-	if (pathName.startsWith(API)) {
-		console.info("Try to use the API");
+	if (pathName.indexOf(API, 0) === 0) {
         var mapped = path.join(ROOT, pathName);
         var pathController = path.join(ROOT, API);
 
         if (mapped.startsWith(pathController)) {
             
         	var parameters = mapped.split(pathController);
-            console.info("Check parameters: " + parameters);
 
         	if (checkParameters(parameters[1])) {
                resource = ROOT + API + formatJSON(parameters);
@@ -93,20 +90,17 @@ var route = function (pathName) {
         }
     } 
     else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {
-        console.info("Resource: index.html");
         pathName = "/index.html";
 	    resource = path.join(ROOT, pathName);
     }
 
     else {
         var staticResource = path.join(ROOT,pathName);
-        console.info("Resource: " + staticResource);
         if (staticResource.indexOf(ROOT, 0) === 0) {
             resource = staticResource;
         }
     }
      
-    console.info(resource); 
     return resource;
 }    
 

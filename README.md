@@ -62,7 +62,7 @@ $ python reduce.py [month] [year] [fileout]
 
 Where month is the month number and year is the year expressed using four digits. The fileout is the file name for the JSON result.
 
-We already elaborated all the Neubot data from January 2012 to May 2013 and we stored the result in the folder `/public/data`.
+We already elaborated all the Neubot data from January 2012 to May 2013 and we stored the result in the folder `frontend/var/www/neuviz/1.0/data`.
 
 How to visualize the result of the project
 ------------------------------------------
