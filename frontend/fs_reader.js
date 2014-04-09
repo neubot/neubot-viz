@@ -24,6 +24,13 @@
 var path = require("path");
 var fs = require("fs");
 
+/**
+ *
+ * Read the file system and return the requested
+ * resource
+ *
+ */
+
 var serve = function (pathName) {
 
     var resource = "";
@@ -34,6 +41,13 @@ var serve = function (pathName) {
     }
     return resource;
 };
+
+/**
+ *
+ * Set the content type of the server.js response
+ * based on the requested resource
+ *
+ */
 
 var reqtype = function(pathName) {
     var extension = path.extname(pathName);

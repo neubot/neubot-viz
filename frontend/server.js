@@ -44,6 +44,13 @@ var notFound = function (res, log_message) {
 	errorResponse(res, 404, 'File not found', log_message);
 };
 
+
+/**
+ *
+ * Manage the HTTP request
+ *
+ */
+
 var start = function (route, serve, reqtype) {
 
     var onRequest = function (req, res) {

@@ -29,24 +29,37 @@ var API = "/neuviz/1.0/data/";
 var years = {};
 var months = {};
 
-String.prototype.startsWith = function (prefix) {
 
-    if (this.indexOf(prefix) === 0) {
-        return true;
-    }
-    return false;
-};
+/**
+ *
+ * Set year paramaters available for the Web API  
+ *
+ */
 
 var fillYears = function () {
     years["2012"] = true;
     years["2013"] = true;
 };
 
+
+/**
+ *
+ * Set month paramaters available for the Web API
+ *
+ */
+
 var fillMonths = function () {
     for (var i = 1; i <= 12; i ++) {
        months[i] = true;
     }
 };
+
+
+/**
+ *
+ * Check if the parameters used in the Web API are acceptable
+ *
+ */
 
 var checkParameters = function (parameters) {
 	fillYears();
@@ -57,6 +70,15 @@ var checkParameters = function (parameters) {
     if (months[parameter[1]] === undefined) return false;
     return true;
 };
+
+
+/**
+ *
+ * Use request parameters to retrieve data as a JSON resource
+ * on the file system
+ *
+ */
+
 
 var formatJSON = function (parameters) {
 
@@ -72,6 +94,12 @@ var formatJSON = function (parameters) {
     return file;
 
 }
+
+/**
+ *
+ * Route toward the requested resource
+ *
+ */
 
 var route = function (pathName) {
 	var resource = undefined;
