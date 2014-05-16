@@ -6,22 +6,28 @@ NeuViz is a data processing and visualization architecture for network measureme
 How it works
 ------------
 
-The Python scripts used for the Elaboration stage are stored in the `backend` folder. The scripts for the Web API (written in Node.js) are stored in the 'frontend' folder. The files for of the Web user interface (HTML + D3.js) are available in the 'frontend/www/var' folder.
+The Python scripts used for the Elaboration stage are stored in the `backend` folder. The scripts for the Web API (written in Node.js) are stored in the `frontend` folder. The files for of the Web user interface (HTML + D3.js) are available in the `frontend/www/var` folder.
 
 Elaboration stage
 -----------------
 
-In the backend folder you can find the Python scripts of the Elaboration stage. We started from the Neubot data [CSV files](http://data.neubot.org/2013/06/20/bigdive/) and we imported using the map.py script into a MongoDB database. After this import step we executed the reduce.py script to elaborate the aggregate the data by country, city, and provider for each month. We elaborated the median of these values and we exported it into a JSON structure, in order to be read from the Visualization client.
+In the backend folder you can find the Python scripts of the Elaboration stage. We started from the Neubot data [CSV files](http://data.neubot.org/2013/06/20/bigdive/) and we imported using the map.py script into a MongoDB database. After the import step we executed the reduce.py script to elaborate the aggregate the data by country, city, and provider for each month. We elaborated the median of these values and we exported it into a JSON structure, in order to be read from the Visualization client.
 
 Web API
 -------
-TODO
+NeuViz exposes a Web API in order to manage requestes from any user and return requested data. 
+
+You need to execute the following script in the `frontend` folder to set up the server and to expose the Web API.
+
+```bash
+$ node frontend.js
+```
 
 Web user interface
 -------------------
 
 We developed a Web client in HTML and Javascript (using the [D3.js](http://d3js.org/) library) in order to show the results of the Elaboration stage on a world map.
-We developed an interactive map that is able to zoom in (and out) to a specific country, showing all the data aggregated by country, city and provider. The user can choose the type of Neubot test (speedtest, bittorrent) to show in the map and the data type (number of Neubot instances, number of tests, download and upload speed, connection time). Moreover, the client can elaborate the difference between the speed test and the bittorrent test. All these parameters can be selected from the interactive panel at the bottom of the web page.
+We developed an interactive map that is able to zoom in (and out) to a specific country, showing all the data aggregated by country, city and provider. The user can choose the type of Neubot test (speedtest, bittorrent) and the data type (number of Neubot instances, number of tests, download and upload speed, connection time). Moreover, the client can elaborate the difference between the speed test and the bittorrent test. All these parameters can be selected from the interactive panel at the bottom of the web page.
 
 Requirements
 ------------
