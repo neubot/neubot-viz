@@ -108,7 +108,7 @@ var route = function (pathName) {
         var mapped = path.join(ROOT, pathName);
         var pathController = path.join(ROOT, API);
 
-        if (mapped.startsWith(pathController)) {
+        if (mapped.indexOf(pathController, 0) === 0) {
             
         	var parameters = mapped.split(pathController);
 
