@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+#content {
+    position: absolute;
+    top: 0px;
+    left: 1100px;
+}
+
+</style>
+<html>
+<body>
+
+<div id="content"></div>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script>
+var width = 500,
+    height = 500;
+var active;
+ 
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var gProv = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "provinces_g");
+var gMun = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "municipalities_g");
+
+var projProv = d3.geo.albers()
+      .center([0, 41])
+      .rotate([347, 0])
+      .parallels([35, 45])
+      .scale(2000)
+      .translate([width / 2, height / 2]);
+
+var pathProv = d3.geo.path()
+      .projection(projProv);
+
+var projMun = d3.geo.albers()
+      .center([0, 41])
+      .rotate([347, 0])
+      .parallels([35, 45])
+      .scale(2000)
+      .translate([width / 2, height / 2]);
+
+var pathMun = d3.geo.path()
+      .projection(projMun)
+
+function click(d) {
+
+  console.info("click");
+    if (active === d) return reset();
+    gProv.selectAll(".active").classed("active", false);
+    d3.select(this).classed("active", active = d);
+
+    var b = pathProv.bounds(d);
+    gProv.transition().duration(750).attr("transform",
+        "translate(" + projProv.translate() + ")"
+        + "scale(" + .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
+        + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+
+    createMunicipalities(d);
+    gProv.attr("opacity", 0);
+}
+
+function createMunicipalities (d) {
+
+    var municipalityData = foo;
+
+    var subunitsMun = topojson.feature(municipalityData, municipalityData.objects.output)
+    var municipalities = topojson.feature(municipalityData, municipalityData.objects.output).features
+    
+    var municipality = gMun.selectAll(".municipality").data(municipalities)
+    gMun.attr("opacity", 1)
+    // draw and style any feature at time
+    municipality
+    //.data(topojson.feature(it, it.objects.sub).features)
+    .enter().append("path")
+    .attr("class", "municipality")
+    .attr("id",function(d) { return d.id; })
+    .attr("d",pathMun)
+    .on("click", clickMun);
+
+    var b = pathProv.bounds(d);
+    gMun.transition().duration(10).attr("transform",
+        "translate(" + projMun.translate() + ")"
+        + "scale(" + .80 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
+        + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+
+}
+
+function clickMun (d) {
+    console.info("click mun");
+    gProv.selectAll(".active").classed("active", active = false);
+    gProv.transition().duration(750).attr("transform", "translate(-400, -270) scale(5)");
+
+    gMun.selectAll(".active").classed("active", active = false);
+    gMun.transition().duration(750).attr("transform", "translate(-400, -270) scale(5)");
+
+    gProv.attr("opacity", 1);
+    gMun.attr("opacity", 0);
+
+    gMun.selectAll(".municipality").remove();
+}
+
+function createHighLevelDonut() {
+    var outerRadius = 120;
+    var innerRadius = outerRadius * .6;
+
+    var data = [
+        { "key": "Press Office", "value": 70 },
+        { "key": "Social Media", "value": 50 },
+        { "key": "Linked Data", "value": 20 },
+        { "key": "Data Visualization", "value": 30 },
+        { "key": "Content Management", "value": 60 },
+        { "key": "Cloud Computing", "value": 10 },
+        { "key": "Journalism", "value" : 60 }
+       ];
+
+    var arc = d3.svg.arc()
+          .outerRadius(outerRadius)
+          .innerRadius(innerRadius);
+
+    var pie = d3.layout.pie()
+        .sort(null)
+        .value(function(d) {
+        return d.number; }
+    );
+
+    var arcs = svg.selectAll("g.slice")
+        .data(pie(skills))
+        .enter()
+        .append("g")
+        .attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
+        .attr("class", "slice");
+
+    arcs.append("path")    
+        .attr("fill", function(d, i) { return color(i); } )
+        .attr("d", arc)
+        .transition()
+        .ease("bounce")
+        .duration(2500)
+        .attrTween("d", tweenPie)
+
+    arcs.append("text")
+        .attr("font-family", "PT Serif")
+        .attr("font-size", "medium")
+        .transition()
+        .delay(2700)
+        .ease("elastic")
+        .duration(2700)
+        .attr("fill", "#333")                  
+        .attr("transform", function(d) {                    
+            var c = arc.centroid(d),
+                  x = c[0],
+                  y = c[1],
+                  // pythagorean theorem for hypotenuse
+                  h = Math.sqrt(x*x + y*y);
+                  return "translate(" + (x/h * 140) +  ',' +
+                                        (y/h * 140) +  ")";   
+        });
+        
+
+}
+
+function reset() {
+    gProv.selectAll(".active").classed("active", active = false);
+    gProv.transition().duration(750).attr("transform", "translate(-400, -270) scale(5)");
+}
+
+queue()
+    .defer(d3.json, "province.json")
+    .defer(d3.json, "municipality.json")
+    .await(ready);
+
+function ready(error, provinceData, municipalityData) {
+    foo = municipalityData
+
+    var subunitsProv = topojson.feature(provinceData, provinceData.objects.sub)
+    var provinces = topojson.feature(provinceData, provinceData.objects.sub).features
+
+    var province = gProv.selectAll(".province").data(provinces)
+      // draw and style any feature at time
+    province
+    //.data(topojson.feature(it, it.objects.sub).features)
+    .enter().append("path")
+    .attr("class", "province")
+    .attr("id",function(d) { return d.id; })
+    .attr("d",pathProv)
+    .on("click", click);
+}
+ 
+</script>
+</body>
+</html>
