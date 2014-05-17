@@ -30,7 +30,7 @@ var http = require('http');
 
 var WEB_SERVER_PORT = 4000;
 
-exports.start = function (route, reqtype) {
+exports.start = function (route) {
 
     var webServer = http.createServer(route);
 

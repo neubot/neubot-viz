@@ -28,6 +28,5 @@
 
 var webServer = require('./server');
 var router = require('./router');
-var fsReader = require('./fs_reader');
 
-webServer.start(router.route, fsReader.reqtype);
+webServer.start(router.route);
