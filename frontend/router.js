@@ -21,8 +21,7 @@
  *
  **/
 var path = require("path");
-var serve = require("fs_reader")
-var serve = require("
+var serve = require("fs_reader");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
