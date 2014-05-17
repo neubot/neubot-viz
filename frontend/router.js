@@ -1,4 +1,6 @@
-/** neuviz/frontend/router.js
+// frontend/router.js
+
+/*-
  *
  * Copyright (c) 2014
  *    Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
@@ -18,11 +20,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with NeuViz.  If not, see <http://www.gnu.org/licenses/>.
- *
- **/
+ */
+
+//
+// Requests router
+//
+
 var path = require("path");
 var fsReader = require("./fs_reader");
 var utils = require("./utils");
+
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
@@ -40,13 +47,6 @@ var paths = {
     "/libs/topojson.v1.min.js": "/var/www/libs/topojson.v1.min.js"
 };
 
-
-/**
- *
- * Check if the parameters used in the Web API are acceptable
- *
- */
-
 var checkParameters = function (pathName) {
     var parameter = pathName.split("/");
     console.info("router: " + parameter);
@@ -59,37 +59,7 @@ var checkParameters = function (pathName) {
     return undefined;
 };
 
-
-/**
- *
- * Use request parameters to retrieve data as a JSON resource
- * on the file system
- *
- */
-
-
-var formatJSON = function (parameters) {
-
-    /* TODO: improve the output of the python data processor
-    to obtain a cleaner file name and a cleaner code */
-
-    var file = "result_";
-    var time = parameters[1].split("/");
-    if (time[1].length == 1)
-        file += "0" + time[1];
-    else file += time[1];
-    file += "_" + time[0] + ".json";
-    return file;
-
-}
-
-/**
- *
- * Route toward the requested resource
- *
- */
-
-var old_route = function (pathName) {
+var old_route = function (pathName) {  // TODO: merge with route()
 
     if (pathName === "/") {
         pathName = "/index.html";
@@ -100,9 +70,9 @@ var old_route = function (pathName) {
     }
 
     return (checkParameters(pathName));
-}
+};
 
-var route = function (request, response) {
+exports.route = function (request, response) {
     var pathResource = old_route(request.url);
 
     console.info("Path resource: " + pathResource)
@@ -115,6 +85,4 @@ var route = function (request, response) {
     var contentType = fsReader.reqtype(pathResource);
 
     fsReader.serve__(pathResource, response, contentType);
-}
-
-exports.route = route;
+};
