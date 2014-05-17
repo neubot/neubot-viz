@@ -31,10 +31,10 @@ var path = require("path");
 var mimetype = require("./mimetype");
 var utils = require("./utils");
 
-var RE_DESCRIPTOR = /^[a-z]+$/;
-var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
+var RE_API = /^[a-z]+$/;
 var RE_MONTH = /^[0-1][0-9]$/;
 var RE_MONTH_SHORT = /^[1-9]$/;
+var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 
 var translateAPI = function (pathName) {
 
@@ -51,7 +51,7 @@ var translateAPI = function (pathName) {
         return undefined;
     }
 
-    if (parameter[1] !== "neuviz") {
+    if (!parameter[1].match(RE_API)) {
         console.warn("router: invalid API selector");
         return undefined;
     }
@@ -61,8 +61,8 @@ var translateAPI = function (pathName) {
         return undefined;
     }
 
-    if (!parameter[3].match(RE_DESCRIPTOR)) {
-        console.warn("router: invalid data descriptor");
+    if (parameter[3] !== "data") {
+        console.warn("router: invalid command");
         return undefined;
     }
 
@@ -83,7 +83,7 @@ var translateAPI = function (pathName) {
     // Step #2: translate the path
     //
 
-    var pathTranslated = "/var/www/neuviz/1.0/" + parameter[3] + "/result";
+    var pathTranslated = "/var/www/" + parameter[1] + "/1.0/data/result";
 
     if (parameter.length >= 6) {
         pathTranslated += "_" + parameter[5] + "_" + parameter[4];
