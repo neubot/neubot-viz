@@ -26,8 +26,8 @@ var utils = require("./utils");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
-var years = {};
-var months = {};
+var regYear = /^[1-2][0-9][0-9][0-9]$/;
+var regMonth = /^[0-1][0-9]$/;
 
 var paths = {
     "/BebasNeue.otf": "/var/www/BebasNeue.otf",
@@ -40,30 +40,6 @@ var paths = {
     "/libs/topojson.v1.min.js": "/var/www/libs/topojson.v1.min.js"
 };
 
-/**
- *
- * Set year paramaters available for the Web API
- *
- */
-
-var fillYears = function () {
-    years["2012"] = true;
-    years["2013"] = true;
-};
-
-
-/**
- *
- * Set month paramaters available for the Web API
- *
- */
-
-var fillMonths = function () {
-    for (var i = 1; i <= 12; i++) {
-        months[i] = true;
-    }
-};
-
 
 /**
  *
@@ -71,14 +47,16 @@ var fillMonths = function () {
  *
  */
 
-var checkParameters = function (parameters) {
-    fillYears();
-    fillMonths();
-    var parameter = parameters.split("/");
-    if (parameter.length > 2) return false;
-    if (years[parameter[0]] === undefined) return false;
-    if (months[parameter[1]] === undefined) return false;
-    return true;
+var checkParameters = function (pathName) {
+    var parameter = pathName.split("/");
+    console.info("router: " + parameter);
+    if (parameter[0] === "" && parameter[1] === "neuviz" && parameter[2] === "1.0"
+        && parameter[3] === "data" && parameter[4].match(regYear) 
+        && parameter[5].match(regMonth)) {
+        return ("/var/www/neuviz/1.0/data/result_" + parameter[5] +
+            "_" + parameter[4] + ".json");
+    }
+    return undefined;
 };
 
 
@@ -121,21 +99,7 @@ var old_route = function (pathName) {
         return (path.join(ROOT, pathName));
     }
 
-    if (pathName.indexOf(API, 0) === 0) {
-        var mapped = path.join(ROOT, pathName);
-        var pathController = path.join(ROOT, API);
-
-        if (mapped.indexOf(pathController, 0) === 0) {
-
-            var parameters = mapped.split(pathController);
-
-            if (checkParameters(parameters[1])) {
-                return (ROOT + API + formatJSON(parameters));
-            }
-        }
-    }
-
-    return undefined;
+    return (checkParameters(pathName));
 }
 
 var route = function (request, response) {
