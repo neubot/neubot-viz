@@ -26,10 +26,12 @@
 // The main file of the Neuviz frontend
 //
 
-var webServer = require('./server');
+var config = require("./config");
 var router = require('./router');
+var webServer = require('./server');
 
 exports.start = function () {
-    webServer.start(router.route);
+    config.readConfig(function () {
+        webServer.start(router.route);
+    });
 };
-
