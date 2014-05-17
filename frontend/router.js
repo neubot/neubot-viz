@@ -22,27 +22,12 @@
  **/
 var path = require("path");
 var fsReader = require("./fs_reader");
+var utils = require("./utils");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
 var years = {};
 var months = {};
-
-var errorResponse = function (res, code, reason, log_message) {
-    console.error('%s', log_message);
-    res.writeHead(code, {
-        'Content-Type': 'text/plain'
-    });
-    res.end(code + " " + reason + "\r\n");
-};
-
-var badRequest = function (res, log_message) {
-    errorResponse(res, 400, 'Bad Request', log_message);
-};
-
-var notFound = function (res, log_message) {
-    errorResponse(res, 404, 'File not found', log_message);
-};
 
 /**
  *
@@ -150,14 +135,14 @@ var route = function (request, response) {
 
 
     if (pathResource === undefined) {
-        badRequest(response, "Bad Request");
+        utils.internalError("400 - Bad Request", request, response);
         return;
     }
 
     var resource = fsReader.serve(pathResource);
 
     if (resource === "UNABLE TO READ FILE") {
-        notFound(response, "Resource not found");
+        utils.internalError("404 - Resource not found", request, response);
         return;
     }
 
@@ -171,4 +156,3 @@ var route = function (request, response) {
 }
 
 exports.route = route;
-

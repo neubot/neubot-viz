@@ -1,6 +1,6 @@
 // frontend/utils.js
 
-/*-
+/*
  * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
  *     Alessio Melandri <alessiom92@gmail.com> and
@@ -59,7 +59,7 @@ var writeHeadVerboseCORS = function (response, status, headers) {
 var internalError = function (error, request, response) {
     console.error("Internal error:", error);
     writeHeadVerboseCORS(response, 500);
-    response.end();
+    response.end(error);
 };
 
 var safelyParseJSON = function (data) {
