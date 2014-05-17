@@ -22,7 +22,7 @@
  */
 
 //
-// File mimetype reader
+// Mimetype module
 //
 
 var path = require("path");

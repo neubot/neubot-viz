@@ -116,26 +116,26 @@ var translatePath = function (pathName) {
 
 exports.route = function (request, response) {
     var pathName = request.url;
-    var pathResource;
+    var pathTranslated;
 
     if (pathName === "/") {
         pathName = "/index.html";
     }
 
     if (URL_TO_PATH[pathName]) {
-        pathResource = path.join(ROOT, pathName);
+        pathTranslated = path.join(ROOT, pathName);
     } else {
-        pathResource = translatePath(pathName);
+        pathTranslated = translatePath(pathName);
     }
 
-    console.info("Path resource: " + pathResource)
+    console.info("Path resource: " + pathTranslated)
 
-    if (pathResource === undefined) {
+    if (pathTranslated === undefined) {
         utils.badRequest(response);
         return;
     }
 
-    var contentType = mimetype.reqtype(pathResource);
+    var contentType = mimetype.reqtype(pathTranslated);
 
-    utils.servePath__(pathResource, response, contentType);
+    utils.servePath__(pathTranslated, response, contentType);
 };
