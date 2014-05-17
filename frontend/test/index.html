@@ -12,6 +12,8 @@
 <html>
 <body>
 
+<div id="map"></div>
+
 <div id="content"></div>
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -21,10 +23,12 @@
 var width = 500,
     height = 500;
 var active;
- 
-var svg = d3.select("body").append("svg")
+
+var svg = d3.select("#map").append("svg")
     .attr("width", width)
     .attr("height", height);
+
+var svgContent = d3.select('#content').append('svg')
 
 var gProv = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "provinces_g");
 var gMun = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "municipalities_g");
@@ -107,17 +111,19 @@ function clickMun (d) {
 }
 
 function createHighLevelDonut() {
+    color = d3.scale.category20c();
+
     var outerRadius = 120;
     var innerRadius = outerRadius * .6;
 
     var data = [
-        { "key": "Press Office", "value": 70 },
-        { "key": "Social Media", "value": 50 },
-        { "key": "Linked Data", "value": 20 },
-        { "key": "Data Visualization", "value": 30 },
-        { "key": "Content Management", "value": 60 },
-        { "key": "Cloud Computing", "value": 10 },
-        { "key": "Journalism", "value" : 60 }
+        { "key": "A", "value": 70 },
+        { "key": "B", "value": 50 },
+        { "key": "C", "value": 20 },
+        { "key": "D", "value": 30 },
+        { "key": "E", "value": 60 },
+        { "key": "F", "value": 10 },
+        { "key": "G", "value" : 60 }
        ];
 
     var arc = d3.svg.arc()
@@ -130,7 +136,7 @@ function createHighLevelDonut() {
         return d.number; }
     );
 
-    var arcs = svg.selectAll("g.slice")
+    var arcs = svg_con.selectAll("g.slice")
         .data(pie(skills))
         .enter()
         .append("g")
@@ -162,8 +168,18 @@ function createHighLevelDonut() {
                   return "translate(" + (x/h * 140) +  ',' +
                                         (y/h * 140) +  ")";   
         });
-        
 
+    function tweenPie(b){
+            b.innerRadius = 0;
+            var i = d3.interpolate({startAngle:0, endAngle:0}, b);
+            return function(t) { return arc(i(t)); };
+    }
+
+    function tweenDonut(b){
+            b.innerRadius = 90 * .6;
+            var i = d3.interpolate({innerRadius:0},b);
+            return function(t) { return arc(i(t)); };
+    } 
 }
 
 function reset() {
