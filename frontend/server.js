@@ -24,62 +24,20 @@ var http = require('http');
 
 var WEB_SERVER_PORT = 4000;
 
-var errorResponse = function (res, code, reason, log_message) {
-    console.error('%s', log_message);
-    res.writeHead(code, {
-        'Content-Type': 'text/plain'
-    });
-    res.end(code + " " + reason + "\r\n");
-};
-
-var badRequest = function (res, log_message) {
-    errorResponse(res, 400, 'Bad Request', log_message);
-};
-
-var internalError = function (res, log_message) {
-    errorResponse(res, 500, 'Internal Server Error', log_message);
-};
-
-var notFound = function (res, log_message) {
-    errorResponse(res, 404, 'File not found', log_message);
-};
-
-
 /**
  *
  * Manage the HTTP request
  *
  */
 
-var start = function (route, serve, reqtype) {
+var start = function (route, reqtype) {
 
     var onRequest = function (req, res) {
         if (req.url == "/favicon.ico")
             return;
 
-        var pathResource = route(req.url);
+        route(req, res);
 
-        console.info("Path resource: " + pathResource)
-
-
-        if (pathResource === undefined) {
-            badRequest(res, "Bad Request");
-            return;
-        }
-
-        var resource = serve(pathResource);
-
-        if (resource === "UNABLE TO READ FILE") {
-            notFound(res, "Resource not found");
-            return;
-        }
-
-        var contentType = reqtype(pathResource);
-        res.writeHead(200, {
-            'Content-Type': contentType
-        });
-        res.write(resource);
-        res.end();
     }
 
     var webServer = http.createServer(onRequest);
