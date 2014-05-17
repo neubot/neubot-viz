@@ -24,6 +24,9 @@
 //
 // File system reader
 //
+// Note: maybe we can rename this file, because its main purpose
+// is not reading the filesystem anymore.
+//
 
 var path = require("path");
 var utils = require("./utils");
