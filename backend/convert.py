@@ -1,14 +1,14 @@
-import sys
-
+import collections
 import csv
 import json
+import sys
 
 from provincefinder import create_provinces_dict
 
 def process(row, provinces, provincesdict):
     key_istat = int(row[0])
     name = row[1]
-    rowtable = {}
+    rowtable = collections.OrderedDict()
     rowtable['A+'] = int(row[2])
     rowtable['A'] = int(row[3])
     rowtable['B'] = int(row[4])
@@ -29,7 +29,7 @@ def process(row, provinces, provincesdict):
             provinces[province]['values'][key] += rowtable[key]
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) != 2:
         sys.exit("Usage: python convert.py [file]")
 
     provinces = {}
@@ -45,7 +45,7 @@ def main():
 
     root = {'type': 'cityCollection', 'features': provinces}
     out_file = open('result.json', 'w')
-    out_file.write(json.dumps(root))
+    json.dump(root, out_file, indent=4)
     out_file.close()
 
 if __name__ == '__main__':
