@@ -57,27 +57,8 @@ var start = function (route, serve, reqtype) {
         if (req.url == "/favicon.ico")
             return;
 
-        var pathResource = route(req.url);
+        route(req, res);
 
-        console.info("Path resource: " + pathResource)
-
-
-        if (pathResource === undefined) {
-            badRequest(res, "Bad Request");
-            return;
-        }
-
-        var resource = serve(pathResource);
-
-        if (resource === "UNABLE TO READ FILE") {
-            notFound(res, "Resource not found");
-            return;
-        }
-
-        var contentType = reqtype(pathResource);
-        res.writeHead(200, {
-            'Content-Type': contentType
-        });
         res.write(resource);
         res.end();
     }
