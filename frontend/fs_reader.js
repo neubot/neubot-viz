@@ -28,9 +28,7 @@
 var path = require("path");
 var utils = require("./utils");
 
-exports.serve__ = function (pathResource, response, contentType) {
-    utils.servePath__(pathResource, response, contentType);
-};
+exports.serve__ = utils.servePath__;
 
 var CONTENT_TYPE = {
     ".json": "application/json",
