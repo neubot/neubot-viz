@@ -568,7 +568,7 @@
     function loadNewJSON(){
       var month = d3.select("#month")[0][0].selectedOptions[0].value
       var year = d3.select("#year")[0][0].selectedOptions[0].value
-      var file_name = "/data/result_"+month+"_"+year+".json"
+      var file_name = "/neuviz/1.0/data/" + year + "/" + month;
 
       d3.json(file_name, function(error, new_data){
        if (error){
