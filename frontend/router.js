@@ -108,7 +108,7 @@ var route = function (request, response) {
     console.info("Path resource: " + pathResource)
 
     if (pathResource === undefined) {
-        utils.badRequest(request, response);
+        utils.badRequest(response);
         return;
     }
 

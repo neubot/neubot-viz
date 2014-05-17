@@ -62,13 +62,13 @@ var internalError = function (error, request, response) {
     response.end("500 - Internal error");
 };
 
-exports.badRequest = function (request, response) {
+exports.badRequest = function (response) {
     console.error("Bad request");
     writeHeadVerboseCORS(response, 400);
     response.end("400 - Bad request");    
 };
 
-exports.notFound = function (request, response) {
+exports.notFound = function (response) {
     console.error("File not found");
     writeHeadVerboseCORS(response, 404);
     response.end("404 - File not found");
