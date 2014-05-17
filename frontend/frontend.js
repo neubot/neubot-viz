@@ -29,4 +29,7 @@
 var webServer = require('./server');
 var router = require('./router');
 
-webServer.start(router.route);
+exports.start = function () {
+    webServer.start(router.route);
+};
+
