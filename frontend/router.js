@@ -33,9 +33,9 @@ var utils = require("./utils");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
-var REG_YEAR = /^[1-2][0-9][0-9][0-9]$/;
-var REG_MONTH = /^[0-1][0-9]$/;
-var REG_MONTH_SHORT = /^[1-9]$/;
+var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
+var RE_MONTH = /^[0-1][0-9]$/;
+var RE_MONTH_SHORT = /^[1-9]$/;
 
 var URLS = [
     "/BebasNeue.otf",
@@ -81,13 +81,13 @@ var checkParameters = function (pathName) {
         return undefined;
     }
 
-    if (!parameter[4].match(REG_YEAR)) {
+    if (!parameter[4].match(RE_YEAR)) {
         console.warn("router: invalid year");
         return undefined;
     }
 
-    if (!parameter[5].match(REG_MONTH)) {
-        if (!parameter[5].match(REG_MONTH_SHORT)) {
+    if (!parameter[5].match(RE_MONTH)) {
+        if (!parameter[5].match(RE_MONTH_SHORT)) {
             console.warn("router: invalid month");
             return undefined;
         }
