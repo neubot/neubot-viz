@@ -135,7 +135,7 @@ var old_route = function (pathName) {
         }
     }
 
-    return false;
+    return undefined;
 }
 
 var route = function (request, response) {
@@ -143,7 +143,7 @@ var route = function (request, response) {
 
     console.info("Path resource: " + pathResource)
 
-    if (pathResource === false) {
+    if (pathResource === undefined) {
         utils.badRequest(request, response);
         return;
     }
