@@ -218,7 +218,7 @@ function reset() {
 queue()
     .defer(d3.json, "province.json")
     .defer(d3.json, "municipality.json")
-    .defer(d3.json, "result.json")
+    .defer(d3.json, "http://127.0.0.1:4000/energy/1.0/data")
     .await(ready);
 
 function ready(error, provinceData, municipalityData, resultData) {
