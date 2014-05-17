@@ -36,7 +36,7 @@ var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 var RE_MONTH = /^[0-1][0-9]$/;
 var RE_MONTH_SHORT = /^[1-9]$/;
 
-var translatePath = function (pathName) {
+var translateAPI = function (pathName) {
 
     var parameter = pathName.split("/");
 
@@ -105,7 +105,7 @@ exports.route = function (request, response) {
 
     pathTranslated = config.toStaticPath(pathName);
     if (pathTranslated === undefined)
-        pathTranslated = translatePath(pathName);
+        pathTranslated = translateAPI(pathName);
 
     console.info("Path resource: " + pathTranslated)
 
