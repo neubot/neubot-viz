@@ -1,0 +1,13 @@
+{
+    "staticPaths": [
+        "/BebasNeue.otf",
+        "/favicon.ico",
+        "/geo-data/world-110m.json",
+        "/geo-data/world-country-names.tsv",
+        "/index.html",
+        "/libs/d3.v3.min.js",
+        "/libs/queue.v1.min.js",
+        "/libs/topojson.js",
+        "/libs/topojson.v1.min.js"
+    ]
+}

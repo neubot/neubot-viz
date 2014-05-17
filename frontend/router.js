@@ -26,37 +26,17 @@
 // Requests router
 //
 
+var config = require("./config");
 var path = require("path");
 var mimetype = require("./mimetype");
 var utils = require("./utils");
-
-var ROOT = "/var/www/";
-var API = "/neuviz/1.0/data/";
 
 var RE_DESCRIPTOR = /^[a-z]+$/;
 var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 var RE_MONTH = /^[0-1][0-9]$/;
 var RE_MONTH_SHORT = /^[1-9]$/;
 
-var URLS = [
-    "/BebasNeue.otf",
-    "/geo-data/world-110m.json",
-    "/geo-data/world-country-names.tsv",
-    "/index.html",
-    "/libs/d3.v3.min.js",
-    "/libs/queue.v1.min.js",
-    "/libs/topojson.js",
-    "/libs/topojson.v1.min.js"
-];
-
-var URL_TO_PATH = {
-};
-
-for (i = 0; i < URLS.length; ++i) {
-    URL_TO_PATH[URLS[i]] = "/var/www" + URLS[i];
-}
-
-var translatePath = function (pathName) {
+var translateAPI = function (pathName) {
 
     var parameter = pathName.split("/");
 
@@ -118,15 +98,14 @@ exports.route = function (request, response) {
     var pathName = request.url;
     var pathTranslated;
 
-    if (pathName === "/") {
-        pathName = "/index.html";
-    }
+    utils.logRequest(request);
 
-    if (URL_TO_PATH[pathName]) {
-        pathTranslated = path.join(ROOT, pathName);
-    } else {
-        pathTranslated = translatePath(pathName);
-    }
+    if (pathName.length >= 1 && pathName.substr(pathName.length -1) === "/")
+        pathName += "index.html";
+
+    pathTranslated = config.toStaticPath(pathName);
+    if (pathTranslated === undefined)
+        pathTranslated = translateAPI(pathName);
 
     console.info("Path resource: " + pathTranslated)
 
