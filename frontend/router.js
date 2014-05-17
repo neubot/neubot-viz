@@ -33,10 +33,10 @@ var utils = require("./utils");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
-var regYear = /^[1-2][0-9][0-9][0-9]$/;
-var regMonth = /^[0-1][0-9]$/;
+var REG_YEAR = /^[1-2][0-9][0-9][0-9]$/;
+var REG_MONTH = /^[0-1][0-9]$/;
 
-var paths = {
+var PATHS = {
     "/BebasNeue.otf": "/var/www/BebasNeue.otf",
     "/geo-data/world-110m.json": "/var/www/geo-data/world-110m.json",
     "/geo-data/world-country-names.tsv": "/var/www/geo-data/world-country-names.tsv",
@@ -48,7 +48,9 @@ var paths = {
 };
 
 var checkParameters = function (pathName) {
+
     var parameter = pathName.split("/");
+
     console.info("router: " + parameter);
 
     if (parameter[0] !== "") {
@@ -71,12 +73,12 @@ var checkParameters = function (pathName) {
         return undefined;
     }
 
-    if (!parameter[4].match(regYear)) {
+    if (!parameter[4].match(REG_YEAR)) {
         console.warn("router: invalid year");
         return undefined;
     }
 
-    if (!parameter[5].match(regMonth)) {
+    if (!parameter[5].match(REG_MONTH)) {
         console.warn("router: invalid month");
         return undefined;
     }
@@ -91,7 +93,7 @@ var old_route = function (pathName) {  // TODO: merge with route()
         pathName = "/index.html";
     }
 
-    if (paths[pathName]) {
+    if (PATHS[pathName]) {
         return (path.join(ROOT, pathName));
     }
 
