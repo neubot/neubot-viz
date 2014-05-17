@@ -56,11 +56,15 @@ for (i = 0; i < URLS.length; ++i) {
     URL_TO_PATH[URLS[i]] = "/var/www" + URLS[i];
 }
 
-var checkParameters = function (pathName) {
+var translatePath = function (pathName) {
 
     var parameter = pathName.split("/");
 
-    console.info("router: " + parameter);
+    console.info("router: %j", parameter);
+
+    //
+    // Step #1: make sure that the parameters are correct
+    //
 
     if (parameter[0] !== "") {
         console.warn("router: invalid first parameter");
@@ -82,12 +86,12 @@ var checkParameters = function (pathName) {
         return undefined;
     }
 
-    if (!parameter[4].match(RE_YEAR)) {
+    if (parameter.length >= 5 && !parameter[4].match(RE_YEAR)) {
         console.warn("router: invalid year");
         return undefined;
     }
 
-    if (!parameter[5].match(RE_MONTH)) {
+    if (parameter.length >= 6 && !parameter[5].match(RE_MONTH)) {
         if (!parameter[5].match(RE_MONTH_SHORT)) {
             console.warn("router: invalid month");
             return undefined;
@@ -95,8 +99,19 @@ var checkParameters = function (pathName) {
         parameter[5] = "0" + parameter[5];
     }
 
-    return ("/var/www/neuviz/1.0/data/result_" + parameter[5] +
-        "_" + parameter[4] + ".json");
+    //
+    // Step #2: translate the path
+    //
+
+    var pathTranslated = "/var/www/neuviz/1.0/" + parameter[3] + "/result";
+
+    if (parameter.length >= 6) {
+        pathTranslated += "_" + parameter[5] + "_" + parameter[4];
+    } else if (parameter.length >= 5) {
+        pathTranslated += "_XX_" + parameter[4];
+    }
+
+    return pathTranslated + ".json";
 };
 
 var old_route = function (pathName) {  // TODO: merge with route()
@@ -109,7 +124,7 @@ var old_route = function (pathName) {  // TODO: merge with route()
         return (path.join(ROOT, pathName));
     }
 
-    return (checkParameters(pathName));
+    return (translatePath(pathName));
 };
 
 exports.route = function (request, response) {
