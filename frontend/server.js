@@ -1,5 +1,6 @@
-/** neuviz/frontend/server.js
- *
+// frontend/server.js
+
+/*-
  * Copyright (c) 2014
  *    Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
  *    and Giuseppe Futia <giuseppe.futia@polito.it>.
@@ -19,28 +20,27 @@
  * You should have received a copy of the GNU General Public License
  * along with NeuViz.  If not, see <http://www.gnu.org/licenses/>.
  *
- **/
+ */
+
+//
+// Web server
+//
+
 var http = require('http');
 
 var WEB_SERVER_PORT = 4000;
 
-/**
- *
- * Manage the HTTP request
- *
- */
-
-var start = function (route, reqtype) {
+exports.start = function (route, reqtype) {
 
     var onRequest = function (req, res) {
-        if (req.url == "/favicon.ico")
+        if (req.url == "/favicon.ico") {
             return;
-
+        }
         route(req, res);
-
     }
 
     var webServer = http.createServer(onRequest);
+
     webServer.on('listening', function () {
         console.info('Web Server running at port %d', WEB_SERVER_PORT);
     });
@@ -50,7 +50,4 @@ var start = function (route, reqtype) {
     });
 
     webServer.listen(WEB_SERVER_PORT);
-
 };
-
-exports.start = start;
