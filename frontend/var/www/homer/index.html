@@ -35,6 +35,28 @@ var colors = {
     "NC": "#6D6D6D"
 };
 
+var weights = {
+    "A+": "7",
+    "A": "23",
+    "B": "43",
+    "C": "73",
+    "D": "102",
+    "E": "131",
+    "F": "160", 
+    "G": "288"
+};
+
+var mapRange = {
+    "A+": [0, 14],
+    "A": [14, 29],
+    "B": [29, 58],
+    "C": [58, 87],
+    "D": [87, 116],
+    "E": [116, 145],
+    "F": [145, 175],
+    "G": [175, 400]
+}
+
 var svg = d3.select("#map").append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -85,6 +107,7 @@ function click(d) {
 function createMunicipalities (d) {
 
     var municipalityData = foo; //To improve
+    var resultData = bar; //To improve
 
     var subunitsMun = topojson.feature(municipalityData, municipalityData.objects.output)
     var municipalities = topojson.feature(municipalityData, municipalityData.objects.output).features
@@ -96,24 +119,31 @@ function createMunicipalities (d) {
     //.data(topojson.feature(it, it.objects.sub).features)
     .enter().append("path")
     .attr("class", "municipality")
-    .attr("id",function(d) { return d.id; })
+    .attr("id",function (data) { return data.id; })
     .attr("d",pathMun)
-    //.style("stroke", "black")
-    //.style("stroke-width", 0.3)
-    .style("fill", function (d) {
-       /* var maxValue = 0;
+    .style("stroke", "black")
+    .style("stroke-width", 0.3)
+    .style("fill", function (data) {
+        console.info(data.id)
+        var maxValue = 0;
         var maxKey = "";
-        
-        var mapColor = resultData["feature"][d.id]["values"];
-        
-        for (var key in mapColor) {
-            console.info(maxKey);
-            if(maxValue < mapColor[key]) {
-                maxValue = mapColor[key];
-                maxKey = key;
+        //console.info(resultData["feature"][d.id]["municipalities"]);
+        if(resultData["feature"][d.id]["municipalities"][data.id] != undefined) {
+           var mapColor = resultData["feature"][d.id]["municipalities"][data.id]["values"];
+            var sum = 0;
+            var sumUnits = 0;   
+            for (var key in mapColor) {
+                if(key === 'NC')
+                        continue;
+                sum += mapColor[key] * weights[key];
+                sumUnits += mapColor[key];
+            }
+            var avg = sum / sumUnits;
+            for (var key in mapRange) {
+                if(avg >= mapRange[key][0] && avg < mapRange[key][1])
+                        return colors[key];
             }
         }
-        return colors[maxKey];*/
     })
     .on("click", clickMun);
 
@@ -223,6 +253,7 @@ queue()
 
 function ready(error, provinceData, municipalityData, resultData) {
     foo = municipalityData
+    bar = resultData
     //console.info(resultData);
 
     var subunitsProv = topojson.feature(provinceData, provinceData.objects.sub)
@@ -241,17 +272,20 @@ function ready(error, provinceData, municipalityData, resultData) {
     .style("fill", function (d) {
         var maxValue = 0;
         var maxKey = "";
-        
         var mapColor = resultData["feature"][d.id]["values"];
-        
+        var sum = 0;
+        var sumUnits = 0;   
         for (var key in mapColor) {
-            console.info(maxKey);
-            if(maxValue < mapColor[key]) {
-                maxValue = mapColor[key];
-                maxKey = key;
-            }
+                if(key === 'NC')
+                        continue;
+                sum += mapColor[key] * weights[key];
+                sumUnits += mapColor[key];
         }
-        return colors[maxKey];
+        var avg = sum / sumUnits;
+        for (var key in mapRange) {
+                if(avg >= mapRange[key][0] && avg < mapRange[key][1])
+                        return colors[key];
+        }    
     })
     .on("click", click);
 }
