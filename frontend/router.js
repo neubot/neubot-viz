@@ -36,16 +36,23 @@ var API = "/neuviz/1.0/data/";
 var REG_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 var REG_MONTH = /^[0-1][0-9]$/;
 
-var PATHS = {
-    "/BebasNeue.otf": "/var/www/BebasNeue.otf",
-    "/geo-data/world-110m.json": "/var/www/geo-data/world-110m.json",
-    "/geo-data/world-country-names.tsv": "/var/www/geo-data/world-country-names.tsv",
-    "/index.html": "/var/www/index.html",
-    "/libs/d3.v3.min.js": "/var/www/libs/d3.v3.min.js",
-    "/libs/queue.v1.min.js": "/var/www/libs/queue.v1.min.js",
-    "/libs/topojson.js": "/var/www/libs/topojson.js",
-    "/libs/topojson.v1.min.js": "/var/www/libs/topojson.v1.min.js"
+var URLS = [
+    "/BebasNeue.otf",
+    "/geo-data/world-110m.json",
+    "/geo-data/world-country-names.tsv",
+    "/index.html",
+    "/libs/d3.v3.min.js",
+    "/libs/queue.v1.min.js",
+    "/libs/topojson.js",
+    "/libs/topojson.v1.min.js"
+];
+
+var URL_TO_PATH = {
 };
+
+for (i = 0; i < URLS.length; ++i) {
+    URL_TO_PATH[URLS[i]] = "/var/www" + URLS[i];
+}
 
 var checkParameters = function (pathName) {
 
@@ -93,7 +100,7 @@ var old_route = function (pathName) {  // TODO: merge with route()
         pathName = "/index.html";
     }
 
-    if (PATHS[pathName]) {
+    if (URL_TO_PATH[pathName]) {
         return (path.join(ROOT, pathName));
     }
 
