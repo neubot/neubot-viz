@@ -33,6 +33,7 @@ var utils = require("./utils");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
+var RE_DESCRIPTOR = /^[a-z]+$/;
 var RE_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 var RE_MONTH = /^[0-1][0-9]$/;
 var RE_MONTH_SHORT = /^[1-9]$/;
@@ -76,7 +77,7 @@ var checkParameters = function (pathName) {
         return undefined;
     }
 
-    if (parameter[3] !== "data") {
+    if (!parameter[3].match(RE_DESCRIPTOR)) {
         console.warn("router: invalid data descriptor");
         return undefined;
     }
