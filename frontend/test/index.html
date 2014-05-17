@@ -23,6 +23,17 @@
 var width = 500,
     height = 500;
 var active;
+var colors = {
+    "A+": "#014924",
+    "A": "#006B33",
+    "B": "#01A33E",
+    "C": "#8AFF01",
+    "D": "#FFFF00",
+    "E": "#FEC202",
+    "F": "#FF7F00",
+    "G": "#FD0100",
+    "NC": "#6D6D6D"
+};
 
 var svg = d3.select("#map").append("svg")
     .attr("width", width)
@@ -54,25 +65,26 @@ var pathMun = d3.geo.path()
       .projection(projMun)
 
 function click(d) {
+        createHighLevelDonut();
 
-  console.info("click");
-    if (active === d) return reset();
-    gProv.selectAll(".active").classed("active", false);
-    d3.select(this).classed("active", active = d);
+        console.info("click");
+        if (active === d) return reset();
+        gProv.selectAll(".active").classed("active", false);
+        d3.select(this).classed("active", active = d);
 
-    var b = pathProv.bounds(d);
-    gProv.transition().duration(750).attr("transform",
-        "translate(" + projProv.translate() + ")"
-        + "scale(" + .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
-        + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+        var b = pathProv.bounds(d);
+        gProv.transition().duration(750).attr("transform",
+            "translate(" + projProv.translate() + ")"
+            + "scale(" + .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
+            + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
 
-    createMunicipalities(d);
-    gProv.attr("opacity", 0);
+        createMunicipalities(d);
+        gProv.attr("opacity", 0);
 }
 
 function createMunicipalities (d) {
 
-    var municipalityData = foo;
+    var municipalityData = foo; //To improve
 
     var subunitsMun = topojson.feature(municipalityData, municipalityData.objects.output)
     var municipalities = topojson.feature(municipalityData, municipalityData.objects.output).features
@@ -86,6 +98,23 @@ function createMunicipalities (d) {
     .attr("class", "municipality")
     .attr("id",function(d) { return d.id; })
     .attr("d",pathMun)
+    //.style("stroke", "black")
+    //.style("stroke-width", 0.3)
+    .style("fill", function (d) {
+       /* var maxValue = 0;
+        var maxKey = "";
+        
+        var mapColor = resultData["feature"][d.id]["values"];
+        
+        for (var key in mapColor) {
+            console.info(maxKey);
+            if(maxValue < mapColor[key]) {
+                maxValue = mapColor[key];
+                maxKey = key;
+            }
+        }
+        return colors[maxKey];*/
+    })
     .on("click", clickMun);
 
     var b = pathProv.bounds(d);
@@ -111,7 +140,6 @@ function clickMun (d) {
 }
 
 function createHighLevelDonut() {
-    color = d3.scale.category20c();
 
     var outerRadius = 120;
     var innerRadius = outerRadius * .6;
@@ -135,22 +163,22 @@ function createHighLevelDonut() {
         .value(function(d) {
         return d.number; }
     );
-
-    var arcs = svg_con.selectAll("g.slice")
-        .data(pie(skills))
+/*
+    var arcs = svgContent.selectAll("g.slice")
+        .data(pie(data))
         .enter()
         .append("g")
-        .attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
+        //.attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
         .attr("class", "slice");
-
+       
     arcs.append("path")    
-        .attr("fill", function(d, i) { return color(i); } )
+        .attr("fill", function(d, i) { return colors(i); } )
         .attr("d", arc)
         .transition()
         .ease("bounce")
         .duration(2500)
         .attrTween("d", tweenPie)
-
+ 
     arcs.append("text")
         .attr("font-family", "PT Serif")
         .attr("font-size", "medium")
@@ -179,7 +207,7 @@ function createHighLevelDonut() {
             b.innerRadius = 90 * .6;
             var i = d3.interpolate({innerRadius:0},b);
             return function(t) { return arc(i(t)); };
-    } 
+    } */
 }
 
 function reset() {
@@ -190,24 +218,72 @@ function reset() {
 queue()
     .defer(d3.json, "province.json")
     .defer(d3.json, "municipality.json")
+    .defer(d3.json, "result.json")
     .await(ready);
 
-function ready(error, provinceData, municipalityData) {
+function ready(error, provinceData, municipalityData, resultData) {
     foo = municipalityData
+    //console.info(resultData);
 
     var subunitsProv = topojson.feature(provinceData, provinceData.objects.sub)
     var provinces = topojson.feature(provinceData, provinceData.objects.sub).features
 
     var province = gProv.selectAll(".province").data(provinces)
-      // draw and style any feature at time
+    // draw and style any feature at time
     province
     //.data(topojson.feature(it, it.objects.sub).features)
     .enter().append("path")
     .attr("class", "province")
     .attr("id",function(d) { return d.id; })
     .attr("d",pathProv)
+    .style("stroke", "black")
+    .style("stroke-width", 0.3)
+    .style("fill", function (d) {
+        var maxValue = 0;
+        var maxKey = "";
+        
+        var mapColor = resultData["feature"][d.id]["values"];
+        
+        for (var key in mapColor) {
+            console.info(maxKey);
+            if(maxValue < mapColor[key]) {
+                maxValue = mapColor[key];
+                maxKey = key;
+            }
+        }
+        return colors[maxKey];
+    })
     .on("click", click);
 }
+
+
+/*
+function setColors (resultData) {
+
+    var colors = new Object();
+    var keyColors = resultData["feature"][1]["values"];
+
+    console.info(keyColors);
+
+    var valueColors = 
+    
+    for (var key in keyColors) {
+        colors[key] = 
+    }
+*/
+
+    /*
+    colors["upload"] = "blue"
+    colors["download"] = "orange"
+    colors["conn_time"] = "purple"
+    colors["num_client"] = "black"
+    colors["num_sample"] = "black"
+    colors["upload_difference"] = "green"
+    colors["download_difference"] = "green"
+    colors["conn_time_difference"] = "green"
+
+    */
+
  
 </script>
 </body>
