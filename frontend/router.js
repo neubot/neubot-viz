@@ -35,6 +35,7 @@ var API = "/neuviz/1.0/data/";
 
 var REG_YEAR = /^[1-2][0-9][0-9][0-9]$/;
 var REG_MONTH = /^[0-1][0-9]$/;
+var REG_MONTH_SHORT = /^[1-9]$/;
 
 var URLS = [
     "/BebasNeue.otf",
@@ -86,8 +87,11 @@ var checkParameters = function (pathName) {
     }
 
     if (!parameter[5].match(REG_MONTH)) {
-        console.warn("router: invalid month");
-        return undefined;
+        if (!parameter[5].match(REG_MONTH_SHORT)) {
+            console.warn("router: invalid month");
+            return undefined;
+        }
+        parameter[5] = "0" + parameter[5];
     }
 
     return ("/var/www/neuviz/1.0/data/result_" + parameter[5] +
