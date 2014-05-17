@@ -118,3 +118,44 @@ exports.route = function (request, response) {
 
     utils.servePath__(pathTranslated, response, contentType);
 };
+
+if (require.main === module) {
+    console.info("router: unit test...");
+
+    if (translateAPI("neuviz/1.0/data/2013/01/") !== undefined) {
+        console.error("router: return something with wrong 0th param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/foobar/1.0/data/2013/01/") !== undefined) {
+        console.error("router: return something with wrong 1st param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/neuviz/foobar/data/2013/01/") !== undefined) {
+        console.error("router: return something with wrong 2nd param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/neuviz/1.0/foobar42/2013/01/") !== undefined) {
+        console.error("router: return something with wrong 3th param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/neuviz/1.0/data/foobar/01/") !== undefined) {
+        console.error("router: return something with wrong 4th param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/neuviz/1.0/data/2013/foobar/") !== undefined) {
+        console.error("router: return something with wrong 5th param");
+        process.exit(1);
+    }
+
+    if (translateAPI("/neuviz/1.0/data/2013/01/") === undefined) {
+        console.error("router: return undefined for correct API");
+        process.exit(1);
+    }
+
+    console.info("router: unit test... ok");
+}
