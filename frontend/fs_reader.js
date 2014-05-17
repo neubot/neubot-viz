@@ -32,17 +32,18 @@ exports.serve__ = function (pathResource, response, contentType) {
     utils.servePath__(pathResource, response, contentType);
 };
 
+var CONTENT_TYPE = {
+    ".json": "application/json",
+    ".html": "text/html",
+    ".js": "application/javascript"
+};
+
 exports.reqtype = function(pathName) {
     var extension = path.extname(pathName);
     
-    if (extension === "")
-        extension = "plain";
+    var mimeType = CONTENT_TYPE[extension];
+    if (!mimeType)
+        mimeType = "text/plain";
 
-    var contentType = {};
-    contentType[".json"] = "application/json"
-    contentType[".html"] = "text/html"
-    contentType[".js"] = "application/javascript"
-    contentType["plain"] = "text/plain"
-    
-    return contentType[extension];
+    return mimeType;
 };
