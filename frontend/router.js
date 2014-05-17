@@ -50,13 +50,39 @@ var paths = {
 var checkParameters = function (pathName) {
     var parameter = pathName.split("/");
     console.info("router: " + parameter);
-    if (parameter[0] === "" && parameter[1] === "neuviz" && parameter[2] === "1.0"
-        && parameter[3] === "data" && parameter[4].match(regYear) 
-        && parameter[5].match(regMonth)) {
-        return ("/var/www/neuviz/1.0/data/result_" + parameter[5] +
-            "_" + parameter[4] + ".json");
+
+    if (parameter[0] !== "") {
+        console.warn("router: invalid first parameter");
+        return undefined;
     }
-    return undefined;
+
+    if (parameter[1] !== "neuviz") {
+        console.warn("router: invalid API selector");
+        return undefined;
+    }
+
+    if (parameter[2] !== "1.0") {
+        console.warn("router: invalid API version");
+        return undefined;
+    }
+
+    if (parameter[3] !== "data") {
+        console.warn("router: invalid data descriptor");
+        return undefined;
+    }
+
+    if (!parameter[4].match(regYear)) {
+        console.warn("router: invalid year");
+        return undefined;
+    }
+
+    if (!parameter[5].match(regMonth)) {
+        console.warn("router: invalid month");
+        return undefined;
+    }
+
+    return ("/var/www/neuviz/1.0/data/result_" + parameter[5] +
+        "_" + parameter[4] + ".json");
 };
 
 var old_route = function (pathName) {  // TODO: merge with route()
