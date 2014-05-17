@@ -1,6 +1,6 @@
 // frontend/utils.js
 
-/*
+/*-
  * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
  *     Alessio Melandri <alessiom92@gmail.com> and
