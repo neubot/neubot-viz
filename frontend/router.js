@@ -98,6 +98,8 @@ exports.route = function (request, response) {
     var pathName = request.url;
     var pathTranslated;
 
+    utils.logRequest(request);
+
     if (pathName === "/")
         pathName = "/index.html";
 
