@@ -27,7 +27,7 @@
 //
 
 var path = require("path");
-var fsReader = require("./fs_reader");
+var mimetype = require("./mimetype");
 var utils = require("./utils");
 
 var ROOT = "/var/www/";
@@ -114,21 +114,19 @@ var translatePath = function (pathName) {
     return pathTranslated + ".json";
 };
 
-var old_route = function (pathName) {  // TODO: merge with route()
+exports.route = function (request, response) {
+    var pathName = request.url;
+    var pathResource;
 
     if (pathName === "/") {
         pathName = "/index.html";
     }
 
     if (URL_TO_PATH[pathName]) {
-        return (path.join(ROOT, pathName));
+        pathResource = path.join(ROOT, pathName);
+    } else {
+        pathResource = translatePath(pathName);
     }
-
-    return (translatePath(pathName));
-};
-
-exports.route = function (request, response) {
-    var pathResource = old_route(request.url);
 
     console.info("Path resource: " + pathResource)
 
@@ -137,7 +135,7 @@ exports.route = function (request, response) {
         return;
     }
 
-    var contentType = fsReader.reqtype(pathResource);
+    var contentType = mimetype.reqtype(pathResource);
 
-    fsReader.serve__(pathResource, response, contentType);
+    utils.servePath__(pathResource, response, contentType);
 };
