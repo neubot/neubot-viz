@@ -100,8 +100,8 @@ exports.route = function (request, response) {
 
     utils.logRequest(request);
 
-    if (pathName === "/")
-        pathName = "/index.html";
+    if (pathName.length >= 1 && pathName.substr(pathName.length -1) === "/")
+        pathName += "index.html";
 
     pathTranslated = config.toStaticPath(pathName);
     if (pathTranslated === undefined)
