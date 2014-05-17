@@ -22,24 +22,10 @@
 **/
 
 var path = require("path");
-var fs = require("fs");
+var utils = require("./utils");
 
-/**
- *
- * Read the file system and return the requested
- * resource
- *
- */
-
-var serve = function (pathName) {
-
-    var resource = "";
-    try {
-        resource = fs.readFileSync(pathName);
-    } catch (err) {
-        resource = "UNABLE TO READ FILE";
-    }
-    return resource;
+exports.serve__ = function (pathResource, response, contentType) {
+    utils.servePath__(pathResource, response, contentType);
 };
 
 /**
@@ -64,5 +50,4 @@ var reqtype = function(pathName) {
     return contentType[extension];
 };
 
-exports.serve = serve;
 exports.reqtype = reqtype;

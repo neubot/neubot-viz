@@ -133,26 +133,14 @@ var route = function (request, response) {
 
     console.info("Path resource: " + pathResource)
 
-
     if (pathResource === undefined) {
         utils.badRequest(request, response);
         return;
     }
 
-    var resource = fsReader.serve(pathResource);
-
-    if (resource === "UNABLE TO READ FILE") {
-        utils.notFound(request, response);
-        return;
-    }
-
     var contentType = fsReader.reqtype(pathResource);
-    res.writeHead(200, {
-        'Content-Type': contentType
-    });
 
-    res.write(resource);
-    res.end();
+    fsReader.serve__(pathResource, response, contentType);
 }
 
 exports.route = route;
