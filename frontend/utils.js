@@ -59,7 +59,19 @@ var writeHeadVerboseCORS = function (response, status, headers) {
 var internalError = function (error, request, response) {
     console.error("Internal error:", error);
     writeHeadVerboseCORS(response, 500);
-    response.end();
+    response.end("500 - Internal error");
+};
+
+exports.badRequest = function (request, response) {
+    console.error("Bad request");
+    writeHeadVerboseCORS(response, 400);
+    response.end("400 - Bad request");    
+};
+
+exports.notFound = function (request, response) {
+    console.error("File not found");
+    writeHeadVerboseCORS(response, 404);
+    response.end("404 - File not found");
 };
 
 var safelyParseJSON = function (data) {
