@@ -21,12 +21,28 @@
  *
  **/
 var path = require("path");
+var serve = require("fs_reader");
 var ROOT = "/var/www/";
 var API = "/neuviz/1.0/data/";
 
 var years = {};
 var months = {};
 
+var errorResponse = function (res, code, reason, log_message) {
+    console.error('%s', log_message);
+    res.writeHead(code, {
+        'Content-Type': 'text/plain'
+    });
+    res.end(code + " " + reason + "\r\n");
+};
+
+var badRequest = function (res, log_message) {
+    errorResponse(res, 400, 'Bad Request', log_message);
+};
+
+var notFound = function (res, log_message) {
+    errorResponse(res, 404, 'File not found', log_message);
+};
 
 /**
  *
@@ -99,7 +115,7 @@ var formatJSON = function (parameters) {
  *
  */
 
-var route = function (pathName) {
+var old_route = function (pathName) {
     var resource = undefined;
 
     if (pathName.indexOf(API, 0) === 0) {
@@ -127,4 +143,32 @@ var route = function (pathName) {
     return resource;
 }
 
+var route = function (request, response) {
+    var pathResource = old_route(request.url);
+
+    console.info("Path resource: " + pathResource)
+
+
+    if (pathResource === undefined) {
+        badRequest(response, "Bad Request");
+        return;
+    }
+
+    var resource = serve(pathResource);
+
+    if (resource === "UNABLE TO READ FILE") {
+        notFound(response, "Resource not found");
+        return;
+    }
+
+    var contentType = reqtype(pathResource);
+    res.writeHead(200, {
+        'Content-Type': contentType
+    });
+
+    res.write(resource);
+    res.end();
+}
+
 exports.route = route;
+
