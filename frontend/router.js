@@ -27,7 +27,7 @@
 //
 
 var path = require("path");
-var fsReader = require("./fs_reader");
+var mimetype = require("./mimetype");
 var utils = require("./utils");
 
 var ROOT = "/var/www/";
@@ -135,7 +135,7 @@ exports.route = function (request, response) {
         return;
     }
 
-    var contentType = fsReader.reqtype(pathResource);
+    var contentType = mimetype.reqtype(pathResource);
 
-    fsReader.serve__(pathResource, response, contentType);
+    utils.servePath__(pathResource, response, contentType);
 };

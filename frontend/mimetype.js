@@ -1,4 +1,4 @@
-// frontend/fs_reader.js
+// frontend/mimetype.js
 
 /*-
  * Copyright (c) 2014
@@ -22,16 +22,10 @@
  */
 
 //
-// File system reader
-//
-// Note: maybe we can rename this file, because its main purpose
-// is not reading the filesystem anymore.
+// File mimetype reader
 //
 
 var path = require("path");
-var utils = require("./utils");
-
-exports.serve__ = utils.servePath__;  /* TODO: glue to remove */
 
 var CONTENT_TYPE = {
     ".json": "application/json",
@@ -50,25 +44,25 @@ exports.reqtype = function(pathName) {
 };
 
 if (require.main === module) {
-    console.info("fs_reader: unit test...");
+    console.info("mimetype: unit test...");
 
     if (exports.reqtype("foo.json") !== "application/json") {
-        console.error("fs_reader: wrong mime type for .json");
+        console.error("mimetype: wrong mime type for .json");
         process.exit(1);
     }
 
     if (exports.reqtype("foo.html") !== "text/html") {
-        console.error("fs_reader: wrong mime type for .html");
+        console.error("mimetype: wrong mime type for .html");
         process.exit(1);
     }
 
     if (exports.reqtype("foo.js") !== "application/javascript") {
-        console.error("fs_reader: wrong mime type for .js");
+        console.error("mimetype: wrong mime type for .js");
         process.exit(1);
     }
 
     if (exports.reqtype("foo") !== "text/plain") {
-        console.error("fs_reader: wrong default mime type");
+        console.error("mimetype: wrong default mime type");
         process.exit(1);
     }
 
