@@ -31,7 +31,7 @@
 var path = require("path");
 var utils = require("./utils");
 
-exports.serve__ = utils.servePath__;
+exports.serve__ = utils.servePath__;  /* TODO: glue to remove */
 
 var CONTENT_TYPE = {
     ".json": "application/json",
