@@ -152,8 +152,7 @@ exports.servePath__ = function (filename, response, mimetype) {
 
         if (!exists) {
             console.warn("servePath__: file not found: " + localPath);
-            writeHeadVerboseCORS(response, 404);
-            response.end();
+            exports.notFound(response);
             return;
         }
 
