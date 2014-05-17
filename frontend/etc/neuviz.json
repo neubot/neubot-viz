@@ -1,6 +1,7 @@
 {
     "staticPaths": [
         "/BebasNeue.otf",
+        "/favicon.ico",
         "/geo-data/world-110m.json",
         "/geo-data/world-country-names.tsv",
         "/index.html",
