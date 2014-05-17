@@ -1,4 +1,4 @@
-// registry/utils.js
+// frontend/utils.js
 
 /*
  * Copyright (c) 2014
@@ -32,7 +32,6 @@
 /*jslint node: true */
 "use strict";
 
-var authlib = require("http-digest-auth");
 var fs = require("fs");
 
 var writeHeadVerbose = function (response, status, headers) {
@@ -61,25 +60,6 @@ var internalError = function (error, request, response) {
     console.error("Internal error:", error);
     writeHeadVerboseCORS(response, 500);
     response.end();
-};
-
-exports.safelyLogin = function (request, response, realm, users) {
-    console.info("utils: safelyLogin");
-    try {
-        return authlib.login(request, response, realm, users);
-    } catch (error) {
-        // Note: because autlib.login() returns indeed false on error
-        return false;
-    }
-};
-
-exports.safelyLogout = function (request) {
-    try {
-        return authlib.logout(request);
-    } catch (error) {
-        // Note: because autlib.login() returns indeed false on error
-        return false;
-    }
 };
 
 var safelyParseJSON = function (data) {
