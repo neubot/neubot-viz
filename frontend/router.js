@@ -146,7 +146,7 @@ var route = function (request, response) {
         return;
     }
 
-    var contentType = reqtype(pathResource);
+    var contentType = fsReader.reqtype(pathResource);
     res.writeHead(200, {
         'Content-Type': contentType
     });
