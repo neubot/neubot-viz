@@ -29,6 +29,17 @@ var API = "/neuviz/1.0/data/";
 var years = {};
 var months = {};
 
+var paths = {
+    "/BebasNeue.otf": "/var/www/BebasNeue.otf",
+    "/geo-data/world-110m.json": "/var/www/geo-data/world-110m.json",
+    "/geo-data/world-country-names.tsv": "/var/www/geo-data/world-country-names.tsv",
+    "/index.html": "/var/www/index.html",
+    "/libs/d3.v3.min.js": "/var/www/libs/d3.v3.min.js",
+    "/libs/queue.v1.min.js": "/var/www/libs/queue.v1.min.js",
+    "/libs/topojson.js": "/var/www/libs/topojson.js",
+    "/libs/topojson.v1.min.js": "/var/www/libs/topojson.v1.min.js"
+};
+
 /**
  *
  * Set year paramaters available for the Web API
@@ -101,7 +112,14 @@ var formatJSON = function (parameters) {
  */
 
 var old_route = function (pathName) {
-    var resource = undefined;
+
+    if (pathName === "/") {
+        pathName = "/index.html";
+    }
+
+    if (paths[pathName]) {
+        return (path.join(ROOT, pathName));
+    }
 
     if (pathName.indexOf(API, 0) === 0) {
         var mapped = path.join(ROOT, pathName);
@@ -112,20 +130,12 @@ var old_route = function (pathName) {
             var parameters = mapped.split(pathController);
 
             if (checkParameters(parameters[1])) {
-                resource = ROOT + API + formatJSON(parameters);
+                return (ROOT + API + formatJSON(parameters));
             }
-        }
-    } else if (pathName === "" || pathName === "/" || pathName === "index" || pathName === "index.html") {
-        pathName = "/index.html";
-        resource = path.join(ROOT, pathName);
-    } else {
-        var staticResource = path.join(ROOT, pathName);
-        if (staticResource.indexOf(ROOT, 0) === 0) {
-            resource = staticResource;
         }
     }
 
-    return resource;
+    return undefined;
 }
 
 var route = function (request, response) {
