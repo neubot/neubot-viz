@@ -32,14 +32,7 @@ var WEB_SERVER_PORT = 4000;
 
 exports.start = function (route, reqtype) {
 
-    var onRequest = function (req, res) {
-        if (req.url == "/favicon.ico") {
-            return;
-        }
-        route(req, res);
-    }
-
-    var webServer = http.createServer(onRequest);
+    var webServer = http.createServer(route);
 
     webServer.on('listening', function () {
         console.info('Web Server running at port %d', WEB_SERVER_PORT);
