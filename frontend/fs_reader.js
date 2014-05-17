@@ -47,3 +47,29 @@ exports.reqtype = function(pathName) {
 
     return mimeType;
 };
+
+if (require.main === module) {
+    console.info("fs_reader: unit test...");
+
+    if (exports.reqtype("foo.json") !== "application/json") {
+        console.error("fs_reader: wrong mime type for .json");
+        process.exit(1);
+    }
+
+    if (exports.reqtype("foo.html") !== "text/html") {
+        console.error("fs_reader: wrong mime type for .html");
+        process.exit(1);
+    }
+
+    if (exports.reqtype("foo.js") !== "application/javascript") {
+        console.error("fs_reader: wrong mime type for .js");
+        process.exit(1);
+    }
+
+    if (exports.reqtype("foo") !== "text/plain") {
+        console.error("fs_reader: wrong default mime type");
+        process.exit(1);
+    }
+
+    console.info("fs_reader: unit test... ok");
+}
