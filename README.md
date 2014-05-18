@@ -15,7 +15,10 @@ In the backend folder you can find the Python scripts of the Elaboration stage. 
 
 Web API
 -------
-NeuViz exposes a Web API to manage requests from any user and return requested data. To expose the web API, run:
+
+NeuViz exposes a Web API that allows the web interface (and possibly 
+other users) to retrieve the JSON files prepared by the Elaboration
+stage. To expose the web API, run:
 
 ```bash
 $ node index.js
