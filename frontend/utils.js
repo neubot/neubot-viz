@@ -65,7 +65,7 @@ var internalError = function (error, request, response) {
 exports.badRequest = function (response) {
     console.error("Bad request");
     writeHeadVerboseCORS(response, 400);
-    response.end("400 - Bad request");    
+    response.end("400 - Bad request");
 };
 
 exports.notFound = function (response) {
