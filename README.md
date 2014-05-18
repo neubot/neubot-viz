@@ -15,12 +15,10 @@ In the backend folder you can find the Python scripts of the Elaboration stage. 
 
 Web API
 -------
-NeuViz exposes a Web API in order to manage requestes from any user and return requested data. 
-
-You need to execute the following script in the `frontend` folder to set up the server and to expose the Web API.
+NeuViz exposes a Web API to manage requestes from any user and return requested data. To expose the web API, run:
 
 ```bash
-$ node frontend.js
+$ node index.js
 ```
 
 Web user interface
