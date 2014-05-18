@@ -2,11 +2,44 @@
 <meta charset="utf-8">
 <style>
 
-#content {
+#chart{
     position: absolute;
     top: 0px;
-    left: 1100px;
+    left: 500px;
 }
+
+#charta{
+    position: absolute;
+    top: 30px;
+    left: 980px;
+}
+
+#chart1{
+    position: absolute;
+    top: 270px;
+    left: 500px;
+}
+
+#chartb{
+    position: absolute;
+    top: 300px;
+    left: 980px;
+}
+
+.hidden { 
+  display: none; 
+}
+div.tooltip {
+  color: #222; 
+  background: #fff; 
+  padding: .5em; 
+  text-shadow: #f5f5f5 0 1px 0;
+  border-radius: 2px; 
+  box-shadow: 0px 0px 2px 0px #a6a6a6; 
+  opacity: 0.9; 
+  position: absolute;
+}
+
 
 </style>
 <html>
@@ -14,7 +47,13 @@
 
 <div id="map"></div>
 
-<div id="content"></div>
+<div id="chart"></div>
+
+<div id="charta"></div>
+
+<div id="chart1"></div>
+
+<div id="chartb"></div>
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
@@ -57,11 +96,23 @@ var mapRange = {
     "G": [175, 400]
 }
 
+var mapProvince = {
+    "1": "Provincia di Torino",
+    "2": "Provincia di Vercelli",
+    "3": "Provincia di Novara",
+    "4": "Provincia di Cuneo",
+    "5": "Provincia di Asti",
+    "6": "Provincia di Alessandri",
+    "96": "Provincia di Biella",
+    "103": "Provincia di Verbano-Cusio-Ossola"
+};
+
 var svg = d3.select("#map").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-var svgContent = d3.select('#content').append('svg')
+var tooltip = d3.select("#map").append("div")
+    .attr("class", "tooltip");
 
 var gProv = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "provinces_g");
 var gMun = svg.append("g").attr("transform", "translate(-400, -270) scale(5)").attr("class", "municipalities_g");
@@ -87,9 +138,8 @@ var pathMun = d3.geo.path()
       .projection(projMun)
 
 function click(d) {
-        createHighLevelDonut();
+        createHighLevelDonut(d);
 
-        console.info("click");
         if (active === d) return reset();
         gProv.selectAll(".active").classed("active", false);
         d3.select(this).classed("active", active = d);
@@ -98,10 +148,15 @@ function click(d) {
         gProv.transition().duration(750).attr("transform",
             "translate(" + projProv.translate() + ")"
             + "scale(" + .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
-            + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
-
+            + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")")
+        .transition().duration(1000)
+        .attr("opacity", 0);
+        
         createMunicipalities(d);
-        gProv.attr("opacity", 0);
+        
+        //gProv.attr("opacity", 0);
+
+        cod = d;//To improve
 }
 
 function createMunicipalities (d) {
@@ -117,19 +172,38 @@ function createMunicipalities (d) {
     // draw and style any feature at time
     municipality
     //.data(topojson.feature(it, it.objects.sub).features)
+    
     .enter().append("path")
     .attr("class", "municipality")
     .attr("id",function (data) { return data.id; })
     .attr("d",pathMun)
+    .attr("opacity", 0)
+    .on("click", clickMun)
+    .on("mouseover", createLowLevelDonut)
+    .on("mouseout", function(){
+        document.getElementById("chart1").innerHTML = "";
+        document.getElementById("chartb").innerHTML = "";
+    })   
+    .on("mousemove", function(data,i) {
+        var mouse = d3.mouse(svg.node()).map( function(data) { return parseInt(data); } );
+
+        tooltip
+          .classed("hidden", false)
+          .attr("style", "left:"+(mouse[0]+25)+"px;top:"+mouse[1]+"px")
+          .html(resultData["feature"][d.id]["municipalities"][data.id]["name"]);
+    })
+    .transition()
+    .delay(1000)
+    .duration(750)
+    .attr("opacity", 1)
     .style("stroke", "black")
-    .style("stroke-width", 0.3)
+    .style("stroke-width", 0.1)
     .style("fill", function (data) {
-        console.info(data.id)
         var maxValue = 0;
         var maxKey = "";
         //console.info(resultData["feature"][d.id]["municipalities"]);
         if(resultData["feature"][d.id]["municipalities"][data.id] != undefined) {
-           var mapColor = resultData["feature"][d.id]["municipalities"][data.id]["values"];
+           var mapColor = resultData["feature"][d.id]["municipalities"][data.id]["values"]; 
             var sum = 0;
             var sumUnits = 0;   
             for (var key in mapColor) {
@@ -143,10 +217,10 @@ function createMunicipalities (d) {
                 if(avg >= mapRange[key][0] && avg < mapRange[key][1])
                         return colors[key];
             }
-        }
+        } else return "white";
     })
-    .on("click", clickMun);
-
+    
+ 
     var b = pathProv.bounds(d);
     gMun.transition().duration(10).attr("transform",
         "translate(" + projMun.translate() + ")"
@@ -156,7 +230,6 @@ function createMunicipalities (d) {
 }
 
 function clickMun (d) {
-    console.info("click mun");
     gProv.selectAll(".active").classed("active", active = false);
     gProv.transition().duration(750).attr("transform", "translate(-400, -270) scale(5)");
 
@@ -167,77 +240,244 @@ function clickMun (d) {
     gMun.attr("opacity", 0);
 
     gMun.selectAll(".municipality").remove();
+    document.getElementById("chart").innerHTML = "";
+    document.getElementById("charta").innerHTML = "";
+    document.getElementById("chart1").innerHTML = "";
+    document.getElementById("chartb").innerHTML = "";
 }
 
-function createHighLevelDonut() {
+function createHighLevelDonut(d) {
 
-    var outerRadius = 120;
-    var innerRadius = outerRadius * .6;
+    var resultData = bar;
 
-    var data = [
-        { "key": "A", "value": 70 },
-        { "key": "B", "value": 50 },
-        { "key": "C", "value": 20 },
-        { "key": "D", "value": 30 },
-        { "key": "E", "value": 60 },
-        { "key": "F", "value": 10 },
-        { "key": "G", "value" : 60 }
-       ];
+    var margin = {top: 1, right: 1, bottom: 6, left: 1},
+    width = 580 - margin.left - margin.right,
+    height = 260 - margin.top - margin.bottom;
+    color = d3.scale.category20c();
+    outerRadius = 80;
+    innerRadius = outerRadius * .6;
 
-    var arc = d3.svg.arc()
-          .outerRadius(outerRadius)
-          .innerRadius(innerRadius);
+    d3.select("#chart").attr("height", height);
 
-    var pie = d3.layout.pie()
-        .sort(null)
-        .value(function(d) {
-        return d.number; }
-    );
-/*
-    var arcs = svgContent.selectAll("g.slice")
-        .data(pie(data))
-        .enter()
-        .append("g")
-        //.attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
-        .attr("class", "slice");
-       
-    arcs.append("path")    
-        .attr("fill", function(d, i) { return colors(i); } )
-        .attr("d", arc)
-        .transition()
-        .ease("bounce")
-        .duration(2500)
-        .attrTween("d", tweenPie)
- 
-    arcs.append("text")
-        .attr("font-family", "PT Serif")
-        .attr("font-size", "medium")
-        .transition()
-        .delay(2700)
-        .ease("elastic")
-        .duration(2700)
-        .attr("fill", "#333")                  
-        .attr("transform", function(d) {                    
-            var c = arc.centroid(d),
-                  x = c[0],
-                  y = c[1],
-                  // pythagorean theorem for hypotenuse
-                  h = Math.sqrt(x*x + y*y);
-                  return "translate(" + (x/h * 140) +  ',' +
-                                        (y/h * 140) +  ")";   
-        });
+    var data = new Array();
 
-    function tweenPie(b){
-            b.innerRadius = 0;
-            var i = d3.interpolate({startAngle:0, endAngle:0}, b);
-            return function(t) { return arc(i(t)); };
+    for(var key in resultData["feature"][d.id]["values"]){
+        data.push({"key": key, "value": resultData["feature"][d.id]["values"][key]})
+
     }
 
+     var legend = d3.select("#charta").append("svg")
+      .attr("class", "legend")
+      .attr("width", 400)
+      .attr("height", 250)
+    .selectAll("g")
+      .data(data)
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d,i){return colorDonut(i)});
+
+  legend.append("text")
+      .attr("x", 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .text(function(d, i) { return data[i].key +": "+ data[i].value; });
+
+    var arc = d3.svg.arc()
+              .outerRadius(outerRadius)
+              .innerRadius(innerRadius);
+
+    var pie = d3.layout.pie()
+               .sort(null)
+               .value(function(d) {
+                return d.value; }
+              );
+
+    var svg = d3.select("#chart").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        
+    var arcs = svg.selectAll("g.slice")
+        .data(pie(data))
+        .enter()
+            .append("g")
+            .attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
+            .attr("class", "slice");
+
+        arcs.append("path")    
+            .attr("fill", function(d, i) { return colorDonut(i); } )
+            .attr("d", arc)
+            .transition()
+              .ease("bounce")
+              .duration(2500)
+              .attrTween("d", tweenPie)
+
+        arcs.append("text")
+           .attr("font-family", "PT Serif")
+           .attr("font-size", "medium")
+           .transition()
+           .delay(2700)
+           .ease("elastic")
+              .duration(2700)
+           .attr("fill", "#333");                 
+           /*.attr("transform", function(d, i) {                    
+                var c = arc.centroid(d),
+                x = c[0],
+                y = c[1],
+                // pythagorean theorem for hypotenuse
+                h = Math.sqrt(x*x + y*y);
+                if(i%2 == 0) {
+                    return "translate(" + (x/h * 115) +  ',' +
+                                        (y/h * 115) +  ")";   
+                    
+                }
+                 return "translate(" + (x/h * 100) +  ',' +
+                                        (y/h * 100) +  ")";   
+            })
+            .attr("text-anchor", function(d) {
+                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+                "end" : "start";
+            })                       
+            .text(function(d, i) { return data[i].key +": "+ data[i].value; });*/
+
+    function tweenPie(b){
+        b.innerRadius = 0;
+        var i = d3.interpolate({startAngle:0, endAngle:0}, b);
+        return function(t) { return arc(i(t)); };
+      }
+
     function tweenDonut(b){
-            b.innerRadius = 90 * .6;
-            var i = d3.interpolate({innerRadius:0},b);
-            return function(t) { return arc(i(t)); };
-    } */
+        b.innerRadius = 90 * .6;
+        var i = d3.interpolate({innerRadius:0},b);
+        return function(t) { return arc(i(t)); };
+      }
+
+    function colorDonut(i) {
+        var count = 0;
+        for(var key in colors) {
+            if(count === i) {
+                return colors[key]
+            }
+            count ++;
+        }
+    }
+}
+
+function createLowLevelDonut(d) {
+    var resultData = bar;
+
+    var margin = {top: 1, right: 1, bottom: 6, left: 1},
+    width = 580 - margin.left - margin.right,
+    height = 260 - margin.top - margin.bottom;
+    color = d3.scale.category20c();
+    outerRadius = 80;
+    innerRadius = outerRadius * .6;
+
+    d3.select("#chart1").attr("height", height);
+
+    var data = new Array();
+    if(resultData["feature"][cod.id] != undefined && resultData["feature"][cod.id]["municipalities"][d.id] != undefined) { 
+        for(var key in resultData["feature"][cod.id]["municipalities"][d.id]["values"]){
+            data.push({"key": key, "value": resultData["feature"][cod.id]["municipalities"][d.id]["values"][key]})
+        }
+    }
+
+      var legend = d3.select("#chartb").append("svg")
+      .attr("class", "legend")
+      .attr("width", 400)
+      .attr("height", 300)
+    .selectAll("g")
+      .data(data)
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d,i){return colorDonut(i)});
+
+  legend.append("text")
+      .attr("x", 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .text(function(d, i) { return data[i].key +": "+ data[i].value; });
+
+    var arc = d3.svg.arc()
+              .outerRadius(outerRadius)
+              .innerRadius(innerRadius);
+
+    var pie = d3.layout.pie()
+               .sort(null)
+               .value(function(d) {
+                return d.value; }
+              );
+
+    var svg = d3.select("#chart1").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        
+    var arcs = svg.selectAll("g.slice")
+        .data(pie(data))
+        .enter()
+            .append("g")
+            .attr("transform", "translate(" + (width/2 - outerRadius) + "," + (outerRadius+50)  + ")")
+            .attr("class", "slice");
+
+        arcs.append("path")    
+            .attr("fill", function(d, i) { return colorDonut(i); } )
+            .attr("d", arc)
+            .transition()
+              .ease("bounce")
+              .duration(2500)
+              .attrTween("d", tweenPie)
+
+        /*arcs.append("text")
+           .attr("font-family", "PT Serif")
+           .attr("font-size", "medium")
+           .transition()
+           .delay(2700)
+           .ease("elastic")
+              .duration(2700)
+           .attr("fill", "#333")                  
+           .attr("transform", function(d) {                    
+                var c = arc.centroid(d),
+                x = c[0],
+                y = c[1],
+                // pythagorean theorem for hypotenuse
+                h = Math.sqrt(x*x + y*y);
+                return "translate(" + (x/h * 115) +  ',' +
+                                      (y/h * 115) +  ")";   
+                })
+            .attr("text-anchor", function(d) {
+                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+                "end" : "start";
+            })                       
+            .text(function(d, i) { return data[i].key +": "+ data[i].value; });*/
+
+    function tweenPie(b){
+        b.innerRadius = 0;
+        var i = d3.interpolate({startAngle:0, endAngle:0}, b);
+        return function(t) { return arc(i(t)); };
+      }
+
+    function tweenDonut(b){
+        b.innerRadius = 90 * .6;
+        var i = d3.interpolate({innerRadius:0},b);
+        return function(t) { return arc(i(t)); };
+      }
+
+    function colorDonut(i) {
+        var count = 0;
+        for(var key in colors) {
+            if(count === i) {
+                return colors[key]
+            }
+            count ++;
+        }
+    }
 }
 
 function reset() {
@@ -287,38 +527,20 @@ function ready(error, provinceData, municipalityData, resultData) {
                         return colors[key];
         }    
     })
+    .on("mousemove", function(d,i) {
+        var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+
+        tooltip
+          .classed("hidden", false)
+          .attr("style", "left:"+(mouse[0]+25)+"px;top:"+mouse[1]+"px")
+          .html(mapProvince[d.id])
+    })
+    .on("mouseout",  function(d,i) {
+        tooltip.classed("hidden", true)
+    })
     .on("click", click);
 }
 
-
-/*
-function setColors (resultData) {
-
-    var colors = new Object();
-    var keyColors = resultData["feature"][1]["values"];
-
-    console.info(keyColors);
-
-    var valueColors = 
-    
-    for (var key in keyColors) {
-        colors[key] = 
-    }
-*/
-
-    /*
-    colors["upload"] = "blue"
-    colors["download"] = "orange"
-    colors["conn_time"] = "purple"
-    colors["num_client"] = "black"
-    colors["num_sample"] = "black"
-    colors["upload_difference"] = "green"
-    colors["download_difference"] = "green"
-    colors["conn_time_difference"] = "green"
-
-    */
-
- 
 </script>
 </body>
 </html>
